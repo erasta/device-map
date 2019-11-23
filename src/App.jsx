@@ -57,7 +57,7 @@ const App = () => {
                 }
             </LeafletMap>
             <Paper
-                style={{ position: 'absolute', top: 50, width: 300, right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
+                style={{ position: 'absolute', top: 50, width: '30%', right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
             >
                 <div
                     style={{ margin: 10 }}
