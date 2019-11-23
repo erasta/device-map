@@ -7,10 +7,10 @@ import { List, ListItem, ListItemText } from '@material-ui/core';
 
 const position = [32.081128, 34.779729];
 const devices = [
-    {name: "Device 1"},
-    {name: "Device 2"},
-    {name: "Device 3"},
-    {name: "Device 4"},
+    { name: "Device 1", position: [32.08, 34.77] },
+    { name: "Device 2" },
+    { name: "Device 3", position: [32.07, 34.78] },
+    { name: "Device 4" },
 ];
 
 const App = () => {
@@ -23,13 +23,19 @@ const App = () => {
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <Marker position={position}>
-                    <Popup>
-                        <span>
-                            A pretty CSS3 popup. <br /> Easily customizable.
-                        </span>
-                    </Popup>
-                </Marker>
+                {
+                    devices.map((dev, index) => (
+                        (!dev.position) ?
+                            null :
+                            <Marker position={dev.position} key={dev.name}>
+                                <Popup>
+                                    <span>
+                                        {dev.name}
+                                    </span>
+                                </Popup>
+                            </Marker>
+                    ))
+                }
             </LeafletMap>
             <Paper style={{ position: 'absolute', top: 50, width: 300, right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                 <List>
