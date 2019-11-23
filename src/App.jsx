@@ -26,7 +26,7 @@ const theDevices = [
 const App = () => {
     const [selectedIndex, setSelectedIndex] = React.useState(0);
     const [selectedType, setSelectedType] = React.useState(theDevices[0].type);
-    const [devices, setDevices] = React.useState(theDevices[0].items);
+    const [devices, setDevices] = React.useState(theDevices);
 
     return (
         <div className="App">
@@ -34,7 +34,7 @@ const App = () => {
                 style={{ width: '100%', height: '100vh' }}
                 onClick={e => {
                     let tempDevices = devices.slice();
-                    tempDevices[selectedIndex].position = [e.latlng.lat, e.latlng.lng];
+                    tempDevices.find(d => d.type === selectedType).items[selectedIndex].position = [e.latlng.lat, e.latlng.lng];
                     setDevices(tempDevices);
                 }}
             >
@@ -43,7 +43,7 @@ const App = () => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 {
-                    devices.map((dev, index) => (
+                    devices.find(d => d.type === selectedType).items.map((dev, index) => (
                         (!dev.position) ?
                             null :
                             <Marker position={dev.position} key={dev.name}>
@@ -72,13 +72,13 @@ const App = () => {
                         }}
                     >
                         {
-                            theDevices.map(dev => <MenuItem key={dev.type} value={dev.type}>{dev.type}</MenuItem>)
+                            devices.map(dev => <MenuItem key={dev.type} value={dev.type}>{dev.type}</MenuItem>)
                         }
                     </Select>
                 </div>
                 <List>
                     {
-                        devices.map((dev, index) => <ListItem
+                        devices.find(d => d.type === selectedType).items.map((dev, index) => <ListItem
                             key={dev.name}
                             button
                             selected={selectedIndex === index}
