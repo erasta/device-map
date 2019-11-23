@@ -22,7 +22,7 @@ const App = () => {
             <LeafletMap center={position} zoom={14}
                 style={{ width: '100%', height: '100vh' }}
                 onClick={(e) => {
-                    let tempDevices = JSON.parse(JSON.stringify(devices));
+                    let tempDevices = devices.slice();
                     tempDevices[selectedIndex].position = [e.latlng.lat, e.latlng.lng];
                     setDevices(tempDevices);
                 }}
