@@ -46,6 +46,19 @@ const DevicesOfType = ({ devices, onDeviceChange }) => {
     )
 }
 
+const DeviceMarkers = ({ devices }) =>
+    devices.map((dev) =>
+        (!dev.position) ?
+            null :
+            <Marker position={dev.position} key={dev.name}>
+                <Popup>
+                    <span>
+                        {dev.name}
+                    </span>
+                </Popup>
+            </Marker>
+    )
+
 const App = () => {
     const [selectedIndex, setSelectedIndex] = React.useState(0);
     const [selectedType, setSelectedType] = React.useState(theDevices[0].type);
@@ -65,19 +78,7 @@ const App = () => {
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {
-                    devices.find(d => d.type === selectedType).items.map((dev, index) => (
-                        (!dev.position) ?
-                            null :
-                            <Marker position={dev.position} key={dev.name}>
-                                <Popup>
-                                    <span>
-                                        {dev.name}
-                                    </span>
-                                </Popup>
-                            </Marker>
-                    ))
-                }
+                <DeviceMarkers devices={devices.find(d => d.type === selectedType).items} />
             </LeafletMap>
             <Paper
                 style={{ position: 'absolute', top: 50, width: '30%', right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
