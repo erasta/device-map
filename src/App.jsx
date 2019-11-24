@@ -1,5 +1,6 @@
 import React from 'react';
 // import './App.css';
+import useStateWithCallback from 'use-state-with-callback';
 
 import { Map as LeafletMap, TileLayer, Marker, Popup } from "react-leaflet";
 import Paper from '@material-ui/core/Paper';
@@ -22,6 +23,28 @@ const theDevices = [
             { name: "Device 8" }]
     }
 ];
+
+const DevicesOfType = ({ devices, onDeviceChange }) => {
+    const [selectedIndex, setSelectedIndex] = useStateWithCallback(0, selectedIndex => {
+        if (onDeviceChange) onDeviceChange(selectedIndex)
+    });
+    return (
+        <List>
+            {
+                devices.map((dev, index) =>
+                    <ListItem
+                        key={dev.name}
+                        button
+                        selected={selectedIndex === index}
+                        onClick={event => setSelectedIndex(index)}
+                    >
+                        <ListItemText primary={dev.name} />
+                    </ListItem>
+                )
+            }
+        </List>
+    )
+}
 
 const App = () => {
     const [selectedIndex, setSelectedIndex] = React.useState(0);
@@ -75,20 +98,8 @@ const App = () => {
                             devices.map(dev => <MenuItem key={dev.type} value={dev.type}>{dev.type}</MenuItem>)
                         }
                     </Select>
+                    <DevicesOfType devices={devices.find(d => d.type === selectedType).items} onDeviceChange={(index) => setSelectedIndex(index)} />
                 </div>
-                <List>
-                    {
-                        devices.find(d => d.type === selectedType).items.map((dev, index) => <ListItem
-                            key={dev.name}
-                            button
-                            selected={selectedIndex === index}
-                            onClick={event => setSelectedIndex(index)}
-                        >
-                            <ListItemText primary={dev.name} />
-                        </ListItem>
-                        )
-                    }
-                </List>
             </Paper>
         </div>
     )
