@@ -1,6 +1,7 @@
 import { InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, IconButton } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import LocationDisabledIcon from '@material-ui/icons/LocationDisabled';
+import LocationOnIcon from '@material-ui/icons/LocationOn';
 import React from 'react';
 import { Map as LeafletMap, Marker, Popup, TileLayer } from "react-leaflet";
 // import './App.css';
@@ -37,9 +38,10 @@ const DevicesOfType = ({ devices, onSelectedChange, onDisableLocation }) => {
                         key={dev.name}
                         button
                         selected={selectedIndex === index}
-                        onClick={event => setSelectedIndex(index)}
+                        onClick={e => setSelectedIndex(index)}
                     >
                         <ListItemText primary={dev.name} />
+                        {dev.position ? <LocationOnIcon /> : null}
                         <IconButton aria-label="Disable location" size="small"
                             onClick={e => onDisableLocation(index)}
                         >
