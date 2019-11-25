@@ -110,6 +110,7 @@ const App = () => {
                     style={{ position: 'absolute', bottom: 10, right: 10, left: 10, justifyContent: 'center' }}
                     inputProps={{ style: { fontSize: 10, lineHeight: 1 } }}
                     value={JSON.stringify(devices, null, 2)}
+                    onChange={e => setDevices(JSON.parse(e.target.value))}
                 />
             </Paper>
         </div>
