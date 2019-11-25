@@ -12,56 +12,23 @@ import useStateWithCallback from 'use-state-with-callback';
 const position = [32.081128, 34.779729];
 const theDevices = [
     {
-      "type": "wind",
-      "items": [
-        {
-          "name": "Device 1",
-          "position": [
-            32.08,
-            34.77
-          ]
-        },
-        {
-          "name": "Device 2"
-        },
-        {
-          "name": "Device 3",
-          "position": [
-            32.07,
-            34.78
-          ]
-        },
-        {
-          "name": "Device 4"
-        }
-      ]
+        "type": "wind",
+        "items": [
+            { "name": "Device 1", "position": [32.08, 34.77] },
+            { "name": "Device 2" },
+            { "name": "Device 3", "position": [32.07, 34.78] },
+            { "name": "Device 4" }]
     },
     {
-      "type": "water",
-      "items": [
-        {
-          "name": "Device 5",
-          "position": [
-            32.080320121040344,
-            34.78262901306153
-          ]
-        },
-        {
-          "name": "Device 6"
-        },
-        {
-          "name": "Device 7",
-          "position": [
-            32.0678106134499,
-            34.768552780151374
-          ]
-        },
-        {
-          "name": "Device 8"
-        }
-      ]
+        "type": "water",
+        "items": [
+            { "name": "Device 5" },
+            { "name": "Device 6", "position": [32.080320121040344, 34.78262901306153] },
+            { "name": "Device 7" },
+            { "name": "Device 8", "position": [32.0678106134499, 34.768552780151374] }
+        ]
     }
-  ];
+];
 
 const DevicesOfType = ({ devices, onSelectedChange, onDisableLocation }) => {
     const [selectedIndex, setSelectedIndex] = useStateWithCallback(0, selectedIndex => {
