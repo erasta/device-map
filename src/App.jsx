@@ -1,10 +1,10 @@
+import { InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField } from '@material-ui/core';
+import Paper from '@material-ui/core/Paper';
 import React from 'react';
+import { Map as LeafletMap, Marker, Popup, TileLayer } from "react-leaflet";
 // import './App.css';
 import useStateWithCallback from 'use-state-with-callback';
 
-import { Map as LeafletMap, TileLayer, Marker, Popup } from "react-leaflet";
-import Paper from '@material-ui/core/Paper';
-import { List, ListItem, ListItemText, InputLabel, Select, MenuItem } from '@material-ui/core';
 
 const position = [32.081128, 34.779729];
 const theDevices = [
@@ -101,6 +101,16 @@ const App = () => {
                     </Select>
                     <DevicesOfType devices={devices.find(d => d.type === selectedType).items} onDeviceChange={(index) => setSelectedIndex(index)} />
                 </div>
+                <TextField
+                    id="outlined-multiline-static"
+                    label="Json"
+                    multiline
+                    rows="10"
+                    variant={"outlined"}
+                    style={{ position: 'absolute', bottom: 10, right: 10, left: 10, justifyContent: 'center' }}
+                    inputProps={{ style: { fontSize: 10, lineHeight: 1 } }}
+                    value={JSON.stringify(devices, null, 2)}
+                />
             </Paper>
         </div>
     )
