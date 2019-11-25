@@ -1,5 +1,6 @@
-import { InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField } from '@material-ui/core';
+import { InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, IconButton } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
+import LocationDisabledIcon from '@material-ui/icons/LocationDisabled';
 import React from 'react';
 import { Map as LeafletMap, Marker, Popup, TileLayer } from "react-leaflet";
 // import './App.css';
@@ -24,9 +25,9 @@ const theDevices = [
     }
 ];
 
-const DevicesOfType = ({ devices, onDeviceChange }) => {
+const DevicesOfType = ({ devices, onSelectedChange, onDisableLocation }) => {
     const [selectedIndex, setSelectedIndex] = useStateWithCallback(0, selectedIndex => {
-        if (onDeviceChange) onDeviceChange(selectedIndex)
+        (onSelectedChange || (() => { }))(selectedIndex)
     });
     return (
         <List>
@@ -39,10 +40,15 @@ const DevicesOfType = ({ devices, onDeviceChange }) => {
                         onClick={event => setSelectedIndex(index)}
                     >
                         <ListItemText primary={dev.name} />
+                        <IconButton aria-label="Disable location" size="small"
+                            onClick={e => onDisableLocation(index)}
+                        >
+                            <LocationDisabledIcon />
+                        </IconButton>
                     </ListItem>
                 )
             }
-        </List>
+        </List >
     )
 }
 
@@ -99,7 +105,15 @@ const App = () => {
                             devices.map(dev => <MenuItem key={dev.type} value={dev.type}>{dev.type}</MenuItem>)
                         }
                     </Select>
-                    <DevicesOfType devices={devices.find(d => d.type === selectedType).items} onDeviceChange={(index) => setSelectedIndex(index)} />
+                    <DevicesOfType
+                        devices={devices.find(d => d.type === selectedType).items}
+                        onSelectedChange={(index) => setSelectedIndex(index)}
+                        onDisableLocation={(index) => {
+                            let tempDevices = devices.slice();
+                            tempDevices.find(d => d.type === selectedType).items[index].position = undefined;
+                            setDevices(tempDevices);
+                        }}
+                    />
                 </div>
                 <TextField
                     id="outlined-multiline-static"
