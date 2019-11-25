@@ -1,4 +1,4 @@
-import { InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, IconButton } from '@material-ui/core';
+import { InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, IconButton, Switch } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import React from 'react';
@@ -59,11 +59,16 @@ const DevicesOfType = ({ devices, onSelectedChange, onDisableLocation }) => {
 // const iconMarkup = ;
 // const customMarkerIcon = ;
 
-const DeviceMarker = ({ device, isSelected }) =>
+const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
     (
         <Marker position={device.position} key={device.name}
             icon={divIcon({
-                html: renderToStaticMarkup(<i className=" fa fa-map-marker-alt fa-2x" style={{ color: isSelected ? '#297A31' : '#1B2C6F' }} />)
+                iconSize: [20, 20],
+                html: renderToStaticMarkup(
+                    <i className=" fa fa-map-marker-alt fa-2x"
+                        style={{ color: (isTypeSelected ? (isSelected ? '#297A31' : '#1B2C6F') : '#888888') }}
+                    />
+                )
             })}
         >
             <Popup>
@@ -78,6 +83,7 @@ const App = () => {
     const [selectedIndex, setSelectedIndex] = React.useState(0);
     const [selectedType, setSelectedType] = React.useState(theDevices[0].type);
     const [devices, setDevices] = React.useState(theDevices);
+    const [showAll, setShowAll] = React.useState(false);
 
     return (
         <div className="App">
@@ -96,9 +102,18 @@ const App = () => {
                 {
                     devices.find(d => d.type === selectedType).items.map((dev, index) =>
                         (!dev.position ? null :
-                            <DeviceMarker key={dev.name} device={dev} isSelected={index === selectedIndex} />
+                            <DeviceMarker key={dev.name} device={dev} isSelected={index === selectedIndex} isTypeSelected={true} />
                         )
                     )
+                }
+                {
+                    showAll ?
+                        devices.find(d => d.type !== selectedType).items.map((dev, index) =>
+                            (!dev.position ? null :
+                                <DeviceMarker key={dev.name} device={dev} isSelected={false} isTypeSelected={false} />
+                            )
+                        )
+                        : null
                 }
             </LeafletMap>
             <Paper
@@ -107,19 +122,29 @@ const App = () => {
                 <div
                     style={{ margin: 10 }}
                 >
-                    <InputLabel id="select-type">Device Type</InputLabel>
-                    <Select
-                        labelId="select-type"
-                        id="select-type"
-                        value={selectedType}
-                        onChange={e => {
-                            setSelectedType(e.target.value);
-                        }}
-                    >
-                        {
-                            devices.map(dev => <MenuItem key={dev.type} value={dev.type}>{dev.type}</MenuItem>)
-                        }
-                    </Select>
+                    <div style={{ width: '100%' }}>
+                        <div style={{ display: 'inline-block', verticalAlign: 'text-top', margin: 5 }}>
+                            <InputLabel id="show-all-types">Show all</InputLabel>
+                            <Switch id="show-all-types" color="primary" inputProps={{ 'aria-label': 'primary checkbox' }}
+                                value={showAll}
+                                onChange={e => setShowAll(e.target.checked)}
+                            />
+                        </div>
+                        <div style={{ display: 'inline-block', verticalAlign: 'text-top', margin: 5 }}>
+                            <InputLabel id="select-type">Device Type</InputLabel>
+                            <Select
+                                id="select-type"
+                                value={selectedType}
+                                onChange={e => {
+                                    setSelectedType(e.target.value);
+                                }}
+                            >
+                                {
+                                    devices.map(dev => <MenuItem key={dev.type} value={dev.type}>{dev.type}</MenuItem>)
+                                }
+                            </Select>
+                        </div>
+                    </div>
                     <DevicesOfType
                         devices={devices.find(d => d.type === selectedType).items}
                         onSelectedChange={(index) => setSelectedIndex(index)}
