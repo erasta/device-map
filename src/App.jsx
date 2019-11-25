@@ -2,6 +2,8 @@ import { InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, 
 import Paper from '@material-ui/core/Paper';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { divIcon } from 'leaflet';
 import { Map as LeafletMap, Marker, Popup, TileLayer } from "react-leaflet";
 // import './App.css';
 import useStateWithCallback from 'use-state-with-callback';
@@ -54,15 +56,22 @@ const DevicesOfType = ({ devices, onSelectedChange, onDisableLocation }) => {
     )
 }
 
+// const iconMarkup = ;
+// const customMarkerIcon = ;
+
 const DeviceMarker = ({ device, isSelected }) =>
     (
-        <Marker position={device.position} key={device.name}>
+        <Marker position={device.position} key={device.name}
+            icon={divIcon({
+                html: renderToStaticMarkup(<i className=" fa fa-map-marker-alt fa-2x" style={{ color: isSelected ? '#297A31' : '#1B2C6F' }} />)
+            })}
+        >
             <Popup>
                 <span>
                     {device.name + '\n' + device.position}
                 </span>
             </Popup>
-        </Marker>
+        </Marker >
     )
 
 const App = () => {
@@ -87,7 +96,7 @@ const App = () => {
                 {
                     devices.find(d => d.type === selectedType).items.map((dev, index) =>
                         (!dev.position ? null :
-                            <DeviceMarker key={dev.name} device={dev} isSelected={index === selectedIndex}/>
+                            <DeviceMarker key={dev.name} device={dev} isSelected={index === selectedIndex} />
                         )
                     )
                 }
