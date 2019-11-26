@@ -30,9 +30,9 @@ const theDevices = [
     }
 ];
 
-const DevicesOfType = ({ devices, onSelectedChange, onDisableLocation }) => {
-    const [selectedIndex, setSelectedIndex] = useStateWithCallback(0, selectedIndex => {
-        (onSelectedChange || (() => { }))(selectedIndex)
+const DevicesOfType = ({ devices, onSelectionChange, onDisableLocation }) => {
+    const [selection, setSelection] = useStateWithCallback([], selection => {
+        (onSelectionChange || (() => { }))(selection)
     });
     return (
         <List>
@@ -41,8 +41,16 @@ const DevicesOfType = ({ devices, onSelectedChange, onDisableLocation }) => {
                     <ListItem
                         key={dev.name}
                         button
-                        selected={selectedIndex === index}
-                        onClick={e => setSelectedIndex(index)}
+                        selected={selection.includes(index)}
+                        onClick={
+                            e => {
+                                if (selection.includes(index)) {
+                                    setSelection(selection.filter(s => s !== index));
+                                } else {
+                                    setSelection(selection.concat([index]).sort());
+                                }
+                            }
+                        }
                     >
                         <ListItemText primary={dev.name} />
                         {!dev.position ? null :
@@ -59,9 +67,6 @@ const DevicesOfType = ({ devices, onSelectedChange, onDisableLocation }) => {
     )
 }
 
-// const iconMarkup = ;
-// const customMarkerIcon = ;
-
 const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
     (
         <Marker position={device.position} key={device.name}
@@ -75,15 +80,13 @@ const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
             })}
         >
             <Popup>
-                <span>
-                    {device.name + '\n' + device.position}
-                </span>
+                    {device.name + ' at (' + device.position + ')'}
             </Popup>
         </Marker >
     )
 
 const App = () => {
-    const [selectedIndex, setSelectedIndex] = React.useState(0);
+    const [selection, setSelection] = React.useState([]);
     const [selectedType, setSelectedType] = React.useState(theDevices[0].type);
     const [devices, setDevices] = React.useState(theDevices);
     const [showAll, setShowAll] = React.useState(false);
@@ -94,7 +97,8 @@ const App = () => {
                 style={{ width: '100%', height: '100vh' }}
                 onClick={e => {
                     let tempDevices = devices.slice();
-                    tempDevices.find(d => d.type === selectedType).items[selectedIndex].position = [e.latlng.lat, e.latlng.lng];
+                    let tempDevicesOfType = tempDevices.find(d => d.type === selectedType).items;
+                    selection.forEach(s => tempDevicesOfType[s].position = [e.latlng.lat, e.latlng.lng]);
                     setDevices(tempDevices);
                 }}
             >
@@ -103,20 +107,22 @@ const App = () => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 {
-                    devices.find(d => d.type === selectedType).items.map((dev, index) =>
-                        (!dev.position ? null :
-                            <DeviceMarker key={dev.name} device={dev} isSelected={index === selectedIndex} isTypeSelected={true} />
-                        )
-                    )
-                }
-                {
-                    showAll ?
-                        devices.find(d => d.type !== selectedType).items.map((dev, index) =>
-                            (!dev.position ? null :
-                                <DeviceMarker key={dev.name} device={dev} isSelected={false} isTypeSelected={false} />
-                            )
-                        )
-                        : null
+                    devices.map(devType => {
+                        if (showAll || (devType.type === selectedType)) {
+                            return devType.items.map((dev, index) => {
+                                if (dev.position) {
+                                    return <DeviceMarker key={dev.name} device={dev}
+                                        isSelected={selection.includes(index)}
+                                        isTypeSelected={devType.type === selectedType}
+                                    />
+                                } else {
+                                    return null;
+                                }
+                            });
+                        } else {
+                            return null;
+                        }
+                    })
                 }
             </LeafletMap>
             <Paper
@@ -150,7 +156,7 @@ const App = () => {
                     </div>
                     <DevicesOfType
                         devices={devices.find(d => d.type === selectedType).items}
-                        onSelectedChange={(index) => setSelectedIndex(index)}
+                        onSelectionChange={(selection) => setSelection(selection)}
                         onDisableLocation={(index) => {
                             let tempDevices = devices.slice();
                             tempDevices.find(d => d.type === selectedType).items[index].position = undefined;
