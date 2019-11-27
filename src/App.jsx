@@ -30,6 +30,25 @@ const theDevices = [
     }
 ];
 
+const DeviceRow = ({ dev, isSelected, onClick, onDisableLocation }) => (
+    <ListItem
+        key={dev.name}
+        button
+        selected={isSelected}
+        onClick={onClick}
+    >
+        <ListItemText primary={dev.name} />
+        {!dev.position ? null :
+            <IconButton aria-label="Disable location" size="small"
+                onClick={onDisableLocation}
+            >
+                <LocationOnIcon />
+            </IconButton>
+        }
+    </ListItem>
+)
+
+
 const DevicesOfType = ({ devices, onSelectionChange, onDisableLocation }) => {
     const [selection, setSelection] = useStateWithCallback([], selection => {
         (onSelectionChange || (() => { }))(selection)
@@ -38,10 +57,10 @@ const DevicesOfType = ({ devices, onSelectionChange, onDisableLocation }) => {
         <List>
             {
                 devices.map((dev, index) =>
-                    <ListItem
+                    <DeviceRow
                         key={dev.name}
-                        button
-                        selected={selection.includes(index)}
+                        dev={dev}
+                        isSelected={selection.includes(index)}
                         onClick={
                             e => {
                                 if (selection.includes(index)) {
@@ -51,16 +70,8 @@ const DevicesOfType = ({ devices, onSelectionChange, onDisableLocation }) => {
                                 }
                             }
                         }
-                    >
-                        <ListItemText primary={dev.name} />
-                        {!dev.position ? null :
-                            <IconButton aria-label="Disable location" size="small"
-                                onClick={e => onDisableLocation(index)}
-                            >
-                                <LocationOnIcon />
-                            </IconButton>
-                        }
-                    </ListItem>
+                        onDisableLocation={e => onDisableLocation(index)}
+                    />
                 )
             }
         </List >
@@ -80,7 +91,7 @@ const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
             })}
         >
             <Popup>
-                    {device.name + ' at (' + device.position + ')'}
+                {device.name + ' at (' + device.position + ')'}
             </Popup>
         </Marker >
     )
@@ -149,7 +160,10 @@ const App = () => {
                                 }}
                             >
                                 {
-                                    devices.map(dev => <MenuItem key={dev.type} value={dev.type}>{dev.type}</MenuItem>)
+                                    devices.map(dev => (
+                                        <MenuItem key={dev.type} value={dev.type}>{dev.type}
+                                        </MenuItem>
+                                    ))
                                 }
                             </Select>
                         </div>
