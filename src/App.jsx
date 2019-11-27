@@ -73,6 +73,21 @@ const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
         </Marker >
     )
 
+const lerp = (from, to, t) => {
+    return [from[0] * (1 - t) + to[0] * t, from[1] * (1 - t) + to[1] * t];
+};
+
+const resampleLine = (from, to, num) => {
+    let ret = new Array(num);
+    ret[0] = from;
+    for (let i = 1; i < num - 1; ++i) {
+        console.log(i, 1.0/i);
+        ret[i] = lerp(from, to, i / (num - 1));
+    }
+    ret[num - 1] = to;
+    return ret;
+}
+
 const App = () => {
     let startPoint, hoverPoint, currPolyline;
     const mapElement = useRef(null);
@@ -108,7 +123,8 @@ const App = () => {
             if (!startPoint) {
                 startPoint = [e.latlng.lat, e.latlng.lng];
             } else {
-                setLocations(selectedType, selection, [startPoint, [e.latlng.lat, e.latlng.lng]]);
+                const locations = resampleLine(startPoint, [e.latlng.lat, e.latlng.lng], selection.length);
+                setLocations(selectedType, selection, locations);
                 startPoint = undefined;
                 currPolyline.remove();
                 currPolyline = undefined;
@@ -119,7 +135,7 @@ const App = () => {
 
     const handleMouseMove = e => {
         hoverPoint = e.latlng;
-        console.log(currPolyline);
+        // console.log(currPolyline);
         if (startPoint) {
             if (!currPolyline) {
                 currPolyline = window.L.polyline([hoverPoint, startPoint]).addTo(mapElement.current.leafletElement);
