@@ -55,7 +55,9 @@ const DeviceRow = ({ dev, isSelected, onClick, onDisableLocation }) => (
 
 const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
     (
-        <Marker position={device.position} key={device.name}
+        <Marker key={device.name}
+            position={device.position}
+            title={device.name}
             icon={divIcon({
                 iconSize: [20, 20],
                 html: renderToStaticMarkup(
@@ -156,14 +158,6 @@ const App = () => {
                             return null;
                         }
                     })
-                }
-                {
-                    // ((!startPoint) ? null :
-                    //     <div>
-                    //         <AnchorPoint name='Start point' position={startPoint} />
-                    //         <Polyline positions={[hoverPoint, startPoint]} />
-                    //     </div>
-                    // )
                 }
             </LeafletMap>
             <Paper
