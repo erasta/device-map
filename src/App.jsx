@@ -8,6 +8,7 @@ import { Map as LeafletMap, Marker, Popup, TileLayer } from "react-leaflet";
 // import './App.css';
 import useStateWithCallback from 'use-state-with-callback';
 
+console.log(new Date());
 
 const position = [32.081128, 34.779729];
 const theDevices = [
@@ -72,16 +73,28 @@ const App = () => {
     const [devices, setDevices] = React.useState(theDevices);
     const [showAll, setShowAll] = React.useState(false);
 
+    const setLocation = (type, index, newLocation) => {
+        let tempDevices = devices.slice();
+        tempDevices.find(d => d.type === type).items[index].position = newLocation;
+        setDevices(tempDevices);
+    };
+
+    const handleSelectionClick = (index) => {
+        if (selection.includes(index)) {
+            setSelection(selection.filter(s => s !== index));
+        } else {
+            setSelection(selection.concat([index]).sort());
+        }
+    }
+
     return (
         <div className="App">
             <LeafletMap center={position} zoom={14}
                 style={{ width: '100%', height: '100vh' }}
-                onClick={e => {
-                    let tempDevices = devices.slice();
-                    let tempDevicesOfType = tempDevices.find(d => d.type === selectedType).items;
-                    selection.forEach(s => tempDevicesOfType[s].position = [e.latlng.lat, e.latlng.lng]);
-                    setDevices(tempDevices);
-                }}
+                onClick={e => selection.forEach(index => {
+                    setLocation(selectedType, index, [e.latlng.lat, e.latlng.lng]);
+                    setSelection([]);
+                })}
             >
                 <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -126,12 +139,14 @@ const App = () => {
                                 id="select-type"
                                 value={selectedType}
                                 onChange={e => {
+                                    setSelection([]);
                                     setSelectedType(e.target.value);
                                 }}
                             >
                                 {
                                     devices.map(dev => (
-                                        <MenuItem key={dev.type} value={dev.type}>{dev.type}
+                                        <MenuItem key={dev.type} value={dev.type}>
+                                            {dev.type}
                                         </MenuItem>
                                     ))
                                 }
@@ -146,20 +161,8 @@ const App = () => {
                                     key={dev.name}
                                     dev={dev}
                                     isSelected={selection.includes(index)}
-                                    onClick={
-                                        e => {
-                                            if (selection.includes(index)) {
-                                                setSelection(selection.filter(s => s !== index));
-                                            } else {
-                                                setSelection(selection.concat([index]).sort());
-                                            }
-                                        }
-                                    }
-                                    onDisableLocation={e => {
-                                        let tempDevices = devices.slice();
-                                        tempDevices.find(d => d.type === selectedType).items[index].position = undefined;
-                                        setDevices(tempDevices);
-                                    }}
+                                    onClick={e => handleSelectionClick(index)}
+                                    onDisableLocation={e => setLocation(selectedType, index, undefined)}
                                 />
                             )
                         }
