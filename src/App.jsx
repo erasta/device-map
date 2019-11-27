@@ -53,6 +53,24 @@ const DeviceRow = ({ dev, isSelected, onClick, onDisableLocation }) => (
     </ListItem>
 )
 
+const AnchorPoint = ({ position, name }) =>
+    (
+        <Marker position={position} key={name}
+            icon={divIcon({
+                iconSize: [20, 20],
+                html: renderToStaticMarkup(
+                    <i className=" fa fa-map-marker-alt fa-2x"
+                        style={{ color: '#B5323D' }}
+                    />
+                )
+            })}
+        >
+            <Popup>
+                {name + ' at (' + position + ')'}
+            </Popup>
+        </Marker >
+    )
+
 const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
     (
         <Marker position={device.position} key={device.name}
@@ -77,6 +95,7 @@ const App = () => {
     const [devices, setDevices] = React.useState(theDevices);
     const [showAll, setShowAll] = React.useState(false);
     const [shape, setShape] = React.useState("Point");
+    const [startPoint, setStartPoint] = React.useState(undefined);
 
     const setLocations = (type, indices, newLocations) => {
         let tempDevices = devices.slice();
@@ -95,14 +114,26 @@ const App = () => {
         }
     }
 
+    const handleMapClick = e => {
+        if (shape === 'Point') {
+            setLocations(selectedType, selection, [[e.latlng.lat, e.latlng.lng]]);
+            setSelection([]);
+        } else if (shape === 'Line') {
+            if (!startPoint) {
+                setStartPoint([e.latlng.lat, e.latlng.lng]);
+            } else {
+                setStartPoint(undefined);
+                setLocations(selectedType, selection, [startPoint, [e.latlng.lat, e.latlng.lng]]);
+                setSelection([]);
+            }
+        }
+    };
+
     return (
         <div className="App">
             <LeafletMap center={position} zoom={14}
                 style={{ width: '100%', height: '100vh' }}
-                onClick={e => {
-                    setLocations(selectedType, selection, [[e.latlng.lat, e.latlng.lng]]);
-                    setSelection([]);
-                }}
+                onClick={handleMapClick}
             >
                 <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -126,6 +157,11 @@ const App = () => {
                         }
                     })
                 }
+                {
+                    ((!startPoint) ? null :
+                        <AnchorPoint name='Start point' position={startPoint} />
+                    )
+                }
             </LeafletMap>
             <Paper
                 style={{ position: 'absolute', top: 50, width: '30%', right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
@@ -143,7 +179,7 @@ const App = () => {
                         <ToggleButton value="Point">
                             Point
                         </ToggleButton>
-                        <ToggleButton value="Line" disabled>
+                        <ToggleButton value="Line">
                             Line
                         </ToggleButton>
                         <ToggleButton value="Curve" disabled>
