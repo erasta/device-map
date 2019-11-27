@@ -5,10 +5,10 @@ import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import Paper from '@material-ui/core/Paper';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import Icon from '@material-ui/core/Icon';
-import React from 'react';
+import React, { useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { divIcon } from 'leaflet';
-import { Map as LeafletMap, Marker, Popup, TileLayer } from "react-leaflet";
+import { Map as LeafletMap, Marker, Popup, TileLayer, Polyline } from "react-leaflet";
 // import './App.css';
 import useStateWithCallback from 'use-state-with-callback';
 
@@ -53,24 +53,6 @@ const DeviceRow = ({ dev, isSelected, onClick, onDisableLocation }) => (
     </ListItem>
 )
 
-const AnchorPoint = ({ position, name }) =>
-    (
-        <Marker position={position} key={name}
-            icon={divIcon({
-                iconSize: [20, 20],
-                html: renderToStaticMarkup(
-                    <i className=" fa fa-map-marker-alt fa-2x"
-                        style={{ color: '#B5323D' }}
-                    />
-                )
-            })}
-        >
-            <Popup>
-                {name + ' at (' + position + ')'}
-            </Popup>
-        </Marker >
-    )
-
 const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
     (
         <Marker position={device.position} key={device.name}
@@ -90,12 +72,14 @@ const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
     )
 
 const App = () => {
+    let startPoint, hoverPoint, currPolyline;
+    const mapElement = useRef(null);
+
     const [selection, setSelection] = React.useState([]);
     const [selectedType, setSelectedType] = React.useState(theDevices[0].type);
     const [devices, setDevices] = React.useState(theDevices);
     const [showAll, setShowAll] = React.useState(false);
     const [shape, setShape] = React.useState("Point");
-    const [startPoint, setStartPoint] = React.useState(undefined);
 
     const setLocations = (type, indices, newLocations) => {
         let tempDevices = devices.slice();
@@ -115,16 +99,30 @@ const App = () => {
     }
 
     const handleMapClick = e => {
-        if (shape === 'Point') {
+        if (shape === 'Point' && selection.length >= 1) {
             setLocations(selectedType, selection, [[e.latlng.lat, e.latlng.lng]]);
             setSelection([]);
-        } else if (shape === 'Line') {
+        } else if (shape === 'Line' && selection.length >= 2) {
             if (!startPoint) {
-                setStartPoint([e.latlng.lat, e.latlng.lng]);
+                startPoint = [e.latlng.lat, e.latlng.lng];
             } else {
-                setStartPoint(undefined);
                 setLocations(selectedType, selection, [startPoint, [e.latlng.lat, e.latlng.lng]]);
+                startPoint = undefined;
+                currPolyline.remove();
+                currPolyline = undefined;
                 setSelection([]);
+            }
+        }
+    };
+
+    const handleMouseMove = e => {
+        hoverPoint = e.latlng;
+        console.log(currPolyline);
+        if (startPoint) {
+            if (!currPolyline) {
+                currPolyline = window.L.polyline([hoverPoint, startPoint]).addTo(mapElement.current.leafletElement);
+            } else {
+                currPolyline.setLatLngs([hoverPoint, startPoint]);
             }
         }
     };
@@ -132,8 +130,10 @@ const App = () => {
     return (
         <div className="App">
             <LeafletMap center={position} zoom={14}
+                ref={mapElement}
                 style={{ width: '100%', height: '100vh' }}
                 onClick={handleMapClick}
+                onMouseMove={handleMouseMove}
             >
                 <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -158,9 +158,12 @@ const App = () => {
                     })
                 }
                 {
-                    ((!startPoint) ? null :
-                        <AnchorPoint name='Start point' position={startPoint} />
-                    )
+                    // ((!startPoint) ? null :
+                    //     <div>
+                    //         <AnchorPoint name='Start point' position={startPoint} />
+                    //         <Polyline positions={[hoverPoint, startPoint]} />
+                    //     </div>
+                    // )
                 }
             </LeafletMap>
             <Paper
