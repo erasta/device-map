@@ -1,6 +1,10 @@
-import { InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, IconButton, Switch } from '@material-ui/core';
+import {
+    InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, IconButton, Switch
+} from '@material-ui/core';
+import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import Paper from '@material-ui/core/Paper';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
+import Icon from '@material-ui/core/Icon';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { divIcon } from 'leaflet';
@@ -125,16 +129,39 @@ const App = () => {
                 <div
                     style={{ margin: 10 }}
                 >
+                    <ToggleButtonGroup
+                        style={{ margin: 5 }}
+                        size="small"
+                        value={"Point"}
+                        exclusive
+                        onChange={e => { }}
+                    >
+                        <ToggleButton value="Point">
+                            Point
+                        </ToggleButton>
+                        <ToggleButton value="Line" disabled>
+                            Line
+                        </ToggleButton>
+                        <ToggleButton value="Curve" disabled>
+                            Curve
+                        </ToggleButton>
+                        <ToggleButton value="Rectangle" disabled>
+                            Rect
+                        </ToggleButton>
+                        <ToggleButton value="Polyline" disabled>
+                            Poly
+                        </ToggleButton>
+                    </ToggleButtonGroup>
                     <div style={{ width: '100%' }}>
                         <div style={{ display: 'inline-block', verticalAlign: 'text-top', margin: 5 }}>
-                            <InputLabel id="show-all-types">Show all</InputLabel>
+                            <InputLabel id="show-all-types" style={{ fontSize: 10 }}>Show all</InputLabel>
                             <Switch id="show-all-types" color="primary" inputProps={{ 'aria-label': 'primary checkbox' }}
                                 value={showAll}
                                 onChange={e => setShowAll(e.target.checked)}
                             />
                         </div>
                         <div style={{ display: 'inline-block', verticalAlign: 'text-top', margin: 5 }}>
-                            <InputLabel id="select-type">Device Type</InputLabel>
+                            <InputLabel id="select-type" style={{ fontSize: 10 }}>Device Type</InputLabel>
                             <Select
                                 id="select-type"
                                 value={selectedType}
