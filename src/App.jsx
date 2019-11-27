@@ -78,9 +78,12 @@ const App = () => {
     const [showAll, setShowAll] = React.useState(false);
     const [shape, setShape] = React.useState("Point");
 
-    const setLocation = (type, index, newLocation) => {
+    const setLocations = (type, indices, newLocations) => {
         let tempDevices = devices.slice();
-        tempDevices.find(d => d.type === type).items[index].position = newLocation;
+        let typeDevices = tempDevices.find(d => d.type === type).items;
+        for (let i = 0; i < indices.length; ++i) {
+            typeDevices[indices[i]].position = newLocations[Math.min(i, newLocations.length - 1)];
+        }
         setDevices(tempDevices);
     };
 
@@ -96,10 +99,10 @@ const App = () => {
         <div className="App">
             <LeafletMap center={position} zoom={14}
                 style={{ width: '100%', height: '100vh' }}
-                onClick={e => selection.forEach(index => {
-                    setLocation(selectedType, index, [e.latlng.lat, e.latlng.lng]);
+                onClick={e => {
+                    setLocations(selectedType, selection, [[e.latlng.lat, e.latlng.lng]]);
                     setSelection([]);
-                })}
+                }}
             >
                 <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -190,7 +193,7 @@ const App = () => {
                                     dev={dev}
                                     isSelected={selection.includes(index)}
                                     onClick={e => handleSelectionClick(index)}
-                                    onDisableLocation={e => setLocation(selectedType, index, undefined)}
+                                    onDisableLocation={e => setLocations(selectedType, [index], [undefined])}
                                 />
                             )
                         }
