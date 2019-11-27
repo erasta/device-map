@@ -76,6 +76,7 @@ const App = () => {
     const [selectedType, setSelectedType] = React.useState(theDevices[0].type);
     const [devices, setDevices] = React.useState(theDevices);
     const [showAll, setShowAll] = React.useState(false);
+    const [shape, setShape] = React.useState("Point");
 
     const setLocation = (type, index, newLocation) => {
         let tempDevices = devices.slice();
@@ -132,9 +133,9 @@ const App = () => {
                     <ToggleButtonGroup
                         style={{ margin: 5 }}
                         size="small"
-                        value={"Point"}
+                        value={shape}
                         exclusive
-                        onChange={e => { }}
+                        onChange={(e, newShape) => setShape(newShape)}
                     >
                         <ToggleButton value="Point">
                             Point
