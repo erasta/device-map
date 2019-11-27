@@ -48,36 +48,6 @@ const DeviceRow = ({ dev, isSelected, onClick, onDisableLocation }) => (
     </ListItem>
 )
 
-
-const DevicesOfType = ({ devices, onSelectionChange, onDisableLocation }) => {
-    const [selection, setSelection] = useStateWithCallback([], selection => {
-        (onSelectionChange || (() => { }))(selection)
-    });
-    return (
-        <List>
-            {
-                devices.map((dev, index) =>
-                    <DeviceRow
-                        key={dev.name}
-                        dev={dev}
-                        isSelected={selection.includes(index)}
-                        onClick={
-                            e => {
-                                if (selection.includes(index)) {
-                                    setSelection(selection.filter(s => s !== index));
-                                } else {
-                                    setSelection(selection.concat([index]).sort());
-                                }
-                            }
-                        }
-                        onDisableLocation={e => onDisableLocation(index)}
-                    />
-                )
-            }
-        </List >
-    )
-}
-
 const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
     (
         <Marker position={device.position} key={device.name}
@@ -168,15 +138,32 @@ const App = () => {
                             </Select>
                         </div>
                     </div>
-                    <DevicesOfType
-                        devices={devices.find(d => d.type === selectedType).items}
-                        onSelectionChange={(selection) => setSelection(selection)}
-                        onDisableLocation={(index) => {
-                            let tempDevices = devices.slice();
-                            tempDevices.find(d => d.type === selectedType).items[index].position = undefined;
-                            setDevices(tempDevices);
-                        }}
-                    />
+
+                    <List>
+                        {
+                            devices.find(d => d.type === selectedType).items.map((dev, index) =>
+                                <DeviceRow
+                                    key={dev.name}
+                                    dev={dev}
+                                    isSelected={selection.includes(index)}
+                                    onClick={
+                                        e => {
+                                            if (selection.includes(index)) {
+                                                setSelection(selection.filter(s => s !== index));
+                                            } else {
+                                                setSelection(selection.concat([index]).sort());
+                                            }
+                                        }
+                                    }
+                                    onDisableLocation={e => {
+                                        let tempDevices = devices.slice();
+                                        tempDevices.find(d => d.type === selectedType).items[index].position = undefined;
+                                        setDevices(tempDevices);
+                                    }}
+                                />
+                            )
+                        }
+                    </List >
                 </div>
                 <TextField
                     id="outlined-multiline-static"
