@@ -81,12 +81,13 @@ const resampleLine = (from, to, num) => {
     let ret = new Array(num);
     ret[0] = from;
     for (let i = 1; i < num - 1; ++i) {
-        console.log(i, 1.0/i);
         ret[i] = lerp(from, to, i / (num - 1));
     }
     ret[num - 1] = to;
     return ret;
 }
+
+let lastIndex;
 
 const App = () => {
     let startPoint, hoverPoint, currPolyline;
@@ -107,12 +108,24 @@ const App = () => {
         setDevices(tempDevices);
     };
 
-    const handleSelectionClick = (index) => {
-        if (selection.includes(index)) {
-            setSelection(selection.filter(s => s !== index));
-        } else {
-            setSelection(selection.concat([index]).sort());
+    const handleSelectionClick = (index, doRange) => {
+        let sel = [];
+        if (!doRange) {
+            if (selection.includes(index)) {
+                sel = selection.filter(s => s !== index);
+            } else {
+                sel = selection.concat([index]);
+            }
+        } else if (lastIndex !== undefined) {
+            const low = Math.min(index, lastIndex), high = Math.max(index, lastIndex);
+            sel = selection.filter(s => s < low);
+            for (let i = low; i <= high; ++i) {
+                sel.push(i);
+            }
+            sel.concat(selection.filter(s => s > high));
         }
+        setSelection(sel.sort());
+        lastIndex = index;
     }
 
     const handleMapClick = e => {
@@ -241,7 +254,7 @@ const App = () => {
                                     key={dev.name}
                                     dev={dev}
                                     isSelected={selection.includes(index)}
-                                    onClick={e => handleSelectionClick(index)}
+                                    onClick={e => handleSelectionClick(index, e.shiftKey)}
                                     onDisableLocation={e => setLocations(selectedType, [index], [undefined])}
                                 />
                             )
