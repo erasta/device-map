@@ -11,37 +11,12 @@ import { divIcon } from 'leaflet';
 import { Map as LeafletMap, Marker, Popup, TileLayer, Polyline } from "react-leaflet";
 // import './App.css';
 import useStateWithCallback from 'use-state-with-callback';
-import { resamplePolyline, splineCurve } from './Utils'
+import { resamplePolyline, splineCurve } from './Utils';
+import { theDevices } from './DataContents';
 
 console.log(new Date());
 
 const position = [32.081128, 34.779729];
-const theDevices = [
-    {
-        "type": "wind",
-        "items": [
-            { "name": "Device 1", "position": [32.08, 34.77] },
-            { "name": "Device 2" },
-            { "name": "Device 3", "position": [32.07, 34.78] },
-            { "name": "Device 4" },
-            { "name": "Device 41" },
-            { "name": "Device 42" },
-            { "name": "Device 43" },
-            { "name": "Device 44" },
-            { "name": "Device 45" },
-            { "name": "Device 46" },
-            { "name": "Device 47" }]
-    },
-    {
-        "type": "water",
-        "items": [
-            { "name": "Device 5" },
-            { "name": "Device 6", "position": [32.080320121040344, 34.78262901306153] },
-            { "name": "Device 7" },
-            { "name": "Device 8", "position": [32.0678106134499, 34.768552780151374] }
-        ]
-    }
-];
 
 const DeviceRow = ({ dev, isSelected, onClick, onDisableLocation }) => (
     <ListItem
@@ -84,7 +59,7 @@ const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
 let lastIndex;
 let markedPoints;
 
-const App = () => {
+export const App = () => {
     const mapElement = useRef(null);
     const currPolyline = useRef(null);
 
@@ -155,7 +130,7 @@ const App = () => {
     const renderShape = (hoverPoint) => {
         if (startPoint) {
             let points = [startPoint].concat(markedPoints);
-            if (hoverPoint){
+            if (hoverPoint) {
                 points.push(hoverPoint);
             }
             if (shape === 'Polyline') {
@@ -278,7 +253,7 @@ const App = () => {
                         </div>
                     </div>
 
-                    <List>
+                    <List style={{ overflow: 'auto', height: 'inherit' }}>
                         {
                             devices.find(d => d.type === selectedType).items.map((dev, index) =>
                                 <DeviceRow
@@ -307,5 +282,3 @@ const App = () => {
         </div>
     )
 }
-
-export default App;
