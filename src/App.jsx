@@ -108,7 +108,7 @@ const App = () => {
         for (let i = 0; i < indices.length; ++i) {
             typeDevices[indices[i]].position = newLocations[Math.min(i, newLocations.length - 1)];
         }
-        setDevices(tempDevices);
+        return tempDevices;
     };
 
     const handleSelectionClick = (index, doRange) => {
@@ -132,15 +132,21 @@ const App = () => {
     }
 
     const handleMapClick = e => {
-        if (shape === 'Point' && selection.length >= 1) {
+        if (selection.length < 1) return;
+        if (shape === 'Point') {
             changeLocations(selectedType, selection, [[e.latlng.lat, e.latlng.lng]]);
             setSelection([]);
-        } else if (shape === 'Line' && selection.length >= 2) {
+        } else {
             if (!startPoint) {
                 setStartPoint([e.latlng.lat, e.latlng.lng]);
             } else {
-                const locations = resampleLine(startPoint, [e.latlng.lat, e.latlng.lng], selection.length);
-                changeLocations(selectedType, selection, locations);
+                let positions;
+                if (shape === 'Line') {
+                    positions = resampleLine(startPoint, [e.latlng.lat, e.latlng.lng], selection.length);
+                } else if (shape === 'Curve') {
+                }
+                let tempDevices = changeLocations(selectedType, selection, positions);
+                setDevices(tempDevices);
                 setStartPoint(undefined);
                 setSelection([]);
             }
@@ -150,7 +156,11 @@ const App = () => {
     const handleMouseMove = e => {
         hoverPoint = e.latlng;
         if (startPoint) {
-            currPolyline.current.leafletElement.setLatLngs([hoverPoint, startPoint]);
+            if (shape === 'Line') {
+                currPolyline.current.leafletElement.setLatLngs([hoverPoint, startPoint]);
+            } else if (shape === 'Curve') {
+
+            }
         }
     };
 
@@ -186,9 +196,16 @@ const App = () => {
                 }
 
                 {
-                    !startPoint ? null :
-                        <Polyline positions={[startPoint, startPoint]} ref={currPolyline} />
+                    (() => {
+                        if (startPoint) {
+                            if (shape === 'Line') {
+                                return <Polyline positions={[startPoint, startPoint]} ref={currPolyline} />
+                            } else if (shape === 'Curve') {
+                            }
+                        }
+                    })()
                 }
+
             </LeafletMap>
             <Paper
                 style={{ position: 'absolute', top: 50, width: '30%', right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
