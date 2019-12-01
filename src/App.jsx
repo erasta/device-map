@@ -11,6 +11,7 @@ import { divIcon } from 'leaflet';
 import { Map as LeafletMap, Marker, Popup, TileLayer, Polyline } from "react-leaflet";
 // import './App.css';
 import useStateWithCallback from 'use-state-with-callback';
+import { Curve } from 'react-leaflet-curve';
 
 console.log(new Date());
 
@@ -90,16 +91,18 @@ const resampleLine = (from, to, num) => {
 let lastIndex;
 
 const App = () => {
-    let startPoint, hoverPoint, currPolyline;
+    let hoverPoint;
     const mapElement = useRef(null);
+    const currPolyline = useRef(null);
 
     const [selection, setSelection] = React.useState([]);
     const [selectedType, setSelectedType] = React.useState(theDevices[0].type);
     const [devices, setDevices] = React.useState(theDevices);
     const [showAll, setShowAll] = React.useState(false);
     const [shape, setShape] = React.useState("Point");
+    const [startPoint, setStartPoint] = React.useState(undefined);
 
-    const setLocations = (type, indices, newLocations) => {
+    const changeLocations = (type, indices, newLocations) => {
         let tempDevices = devices.slice();
         let typeDevices = tempDevices.find(d => d.type === type).items;
         for (let i = 0; i < indices.length; ++i) {
@@ -130,17 +133,15 @@ const App = () => {
 
     const handleMapClick = e => {
         if (shape === 'Point' && selection.length >= 1) {
-            setLocations(selectedType, selection, [[e.latlng.lat, e.latlng.lng]]);
+            changeLocations(selectedType, selection, [[e.latlng.lat, e.latlng.lng]]);
             setSelection([]);
         } else if (shape === 'Line' && selection.length >= 2) {
             if (!startPoint) {
-                startPoint = [e.latlng.lat, e.latlng.lng];
+                setStartPoint([e.latlng.lat, e.latlng.lng]);
             } else {
                 const locations = resampleLine(startPoint, [e.latlng.lat, e.latlng.lng], selection.length);
-                setLocations(selectedType, selection, locations);
-                startPoint = undefined;
-                currPolyline.remove();
-                currPolyline = undefined;
+                changeLocations(selectedType, selection, locations);
+                setStartPoint(undefined);
                 setSelection([]);
             }
         }
@@ -148,13 +149,8 @@ const App = () => {
 
     const handleMouseMove = e => {
         hoverPoint = e.latlng;
-        // console.log(currPolyline);
         if (startPoint) {
-            if (!currPolyline) {
-                currPolyline = window.L.polyline([hoverPoint, startPoint]).addTo(mapElement.current.leafletElement);
-            } else {
-                currPolyline.setLatLngs([hoverPoint, startPoint]);
-            }
+            currPolyline.current.leafletElement.setLatLngs([hoverPoint, startPoint]);
         }
     };
 
@@ -188,6 +184,11 @@ const App = () => {
                         }
                     })
                 }
+
+                {
+                    !startPoint ? null :
+                        <Polyline positions={[startPoint, startPoint]} ref={currPolyline} />
+                }
             </LeafletMap>
             <Paper
                 style={{ position: 'absolute', top: 50, width: '30%', right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
@@ -208,7 +209,7 @@ const App = () => {
                         <ToggleButton value="Line">
                             Line
                         </ToggleButton>
-                        <ToggleButton value="Curve" disabled>
+                        <ToggleButton value="Curve">
                             Curve
                         </ToggleButton>
                         <ToggleButton value="Rectangle" disabled>
@@ -255,7 +256,7 @@ const App = () => {
                                     dev={dev}
                                     isSelected={selection.includes(index)}
                                     onClick={e => handleSelectionClick(index, e.shiftKey)}
-                                    onDisableLocation={e => setLocations(selectedType, [index], [undefined])}
+                                    onDisableLocation={e => changeLocations(selectedType, [index], [undefined])}
                                 />
                             )
                         }
