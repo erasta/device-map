@@ -11,7 +11,7 @@ import { divIcon } from 'leaflet';
 import { Map as LeafletMap, Marker, Popup, TileLayer, Polyline } from "react-leaflet";
 // import './App.css';
 import useStateWithCallback from 'use-state-with-callback';
-import { resampleLine, splineCurve } from './Utils'
+import { resamplePolyline, splineCurve } from './Utils'
 
 console.log(new Date());
 
@@ -23,7 +23,14 @@ const theDevices = [
             { "name": "Device 1", "position": [32.08, 34.77] },
             { "name": "Device 2" },
             { "name": "Device 3", "position": [32.07, 34.78] },
-            { "name": "Device 4" }]
+            { "name": "Device 4" },
+            { "name": "Device 41" },
+            { "name": "Device 42" },
+            { "name": "Device 43" },
+            { "name": "Device 44" },
+            { "name": "Device 45" },
+            { "name": "Device 46" },
+            { "name": "Device 47" }]
     },
     {
         "type": "water",
@@ -132,11 +139,12 @@ const App = () => {
         }
     };
 
-    const handlePutDevices = e => {
-        let positions;
+    const handlePutDevices = () => {
+        let positions = [startPoint].concat(markedPoints);
         if (shape === 'Polyline') {
-            positions = resampleLine(startPoint, [e.latlng.lat, e.latlng.lng], selection.length);
+            positions = resamplePolyline(positions, selection.length);
         } else if (shape === 'Curve') {
+            positions = resamplePolyline(splineCurve(positions, 100), selection.length);
         }
         let tempDevices = changeLocations(selectedType, selection, positions);
         setDevices(tempDevices);
@@ -219,7 +227,7 @@ const App = () => {
                         size="small"
                         value={shape}
                         exclusive
-                        onChange={(e, newShape) => {setShape(newShape); handleMouseOut()}}
+                        onChange={(e, newShape) => setShape(newShape)}
                     >
                         <ToggleButton value="Point">
                             Point

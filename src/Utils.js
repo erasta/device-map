@@ -12,6 +12,44 @@ export const resampleLine = (from, to, num) => {
     return ret;
 }
 
+export const distance = (p, q) => {
+    const dx = p[0] - q[0];
+    const dy = p[1] - q[1];
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+export const polylineLength = (points) => {
+    let total = 0;
+    for (let i = 0; i < points.length - 1; ++i) {
+        total += distance(points[i], points[i + 1]);
+    }
+    return total;
+}
+
+export const findPositionOnPolyline = (points, pos) => {
+    let curr = 0;
+    for (let i = 0; i < points.length - 1; ++i) {
+        const dist = distance(points[i], points[i + 1]);
+        const after = curr + dist;
+        if (after <= pos) {
+            curr = after;
+        } else {
+            const fraction = (pos - curr) / dist;
+            return lerp(points[i], points[i + 1], fraction);
+        }
+    }
+    return points[points.length - 1];
+}
+
+export const resamplePolyline = (points, num) => {
+    const total = polylineLength(points);
+    let resampled = new Array(num);
+    for (let i = 0; i < num; ++i) {
+        resampled[i] = findPositionOnPolyline(points, i / (num - 1) * total);
+    }
+    return resampled;
+}
+
 export const catmullRom = (t, p0, p1, p2, p3) => {
     var v0 = (p2 - p0) * 0.5;
     var v1 = (p3 - p1) * 0.5;
