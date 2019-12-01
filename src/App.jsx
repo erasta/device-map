@@ -1,5 +1,5 @@
 import {
-    InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, IconButton, Switch
+    InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, IconButton, Switch, Button
 } from '@material-ui/core';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import Paper from '@material-ui/core/Paper';
@@ -11,7 +11,7 @@ import { divIcon } from 'leaflet';
 import { Map as LeafletMap, Marker, Popup, TileLayer, Polyline } from "react-leaflet";
 // import './App.css';
 import useStateWithCallback from 'use-state-with-callback';
-import { Curve } from 'react-leaflet-curve';
+import { resampleLine, splineCurve } from './Utils'
 
 console.log(new Date());
 
@@ -74,24 +74,10 @@ const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
         </Marker >
     )
 
-const lerp = (from, to, t) => {
-    return [from[0] * (1 - t) + to[0] * t, from[1] * (1 - t) + to[1] * t];
-};
-
-const resampleLine = (from, to, num) => {
-    let ret = new Array(num);
-    ret[0] = from;
-    for (let i = 1; i < num - 1; ++i) {
-        ret[i] = lerp(from, to, i / (num - 1));
-    }
-    ret[num - 1] = to;
-    return ret;
-}
-
 let lastIndex;
+let markedPoints;
 
 const App = () => {
-    let hoverPoint;
     const mapElement = useRef(null);
     const currPolyline = useRef(null);
 
@@ -132,36 +118,53 @@ const App = () => {
     }
 
     const handleMapClick = e => {
-        if (selection.length < 1) return;
+        // if (selection.length < 1) return;
         if (shape === 'Point') {
             changeLocations(selectedType, selection, [[e.latlng.lat, e.latlng.lng]]);
             setSelection([]);
         } else {
             if (!startPoint) {
                 setStartPoint([e.latlng.lat, e.latlng.lng]);
+                markedPoints = [];
             } else {
-                let positions;
-                if (shape === 'Line') {
-                    positions = resampleLine(startPoint, [e.latlng.lat, e.latlng.lng], selection.length);
-                } else if (shape === 'Curve') {
-                }
-                let tempDevices = changeLocations(selectedType, selection, positions);
-                setDevices(tempDevices);
-                setStartPoint(undefined);
-                setSelection([]);
+                markedPoints.push([e.latlng.lat, e.latlng.lng]);
+            }
+        }
+    };
+
+    const handlePutDevices = e => {
+        let positions;
+        if (shape === 'Polyline') {
+            positions = resampleLine(startPoint, [e.latlng.lat, e.latlng.lng], selection.length);
+        } else if (shape === 'Curve') {
+        }
+        let tempDevices = changeLocations(selectedType, selection, positions);
+        setDevices(tempDevices);
+        setStartPoint(undefined);
+        setSelection([]);
+    };
+
+    const renderShape = (hoverPoint) => {
+        if (startPoint) {
+            let points = [startPoint].concat(markedPoints);
+            if (hoverPoint){
+                points.push(hoverPoint);
+            }
+            if (shape === 'Polyline') {
+                currPolyline.current.leafletElement.setLatLngs(points);
+            } else if (shape === 'Curve') {
+                const curve = splineCurve(points, 100);
+                currPolyline.current.leafletElement.setLatLngs(curve);
             }
         }
     };
 
     const handleMouseMove = e => {
-        hoverPoint = e.latlng;
-        if (startPoint) {
-            if (shape === 'Line') {
-                currPolyline.current.leafletElement.setLatLngs([hoverPoint, startPoint]);
-            } else if (shape === 'Curve') {
+        renderShape([e.latlng.lat, e.latlng.lng]);
+    };
 
-            }
-        }
+    const handleMouseOut = () => {
+        renderShape();
     };
 
     return (
@@ -171,6 +174,7 @@ const App = () => {
                 style={{ width: '100%', height: '100vh' }}
                 onClick={handleMapClick}
                 onMouseMove={handleMouseMove}
+                onMouseOut={handleMouseOut}
             >
                 <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -198,10 +202,7 @@ const App = () => {
                 {
                     (() => {
                         if (startPoint) {
-                            if (shape === 'Line') {
-                                return <Polyline positions={[startPoint, startPoint]} ref={currPolyline} />
-                            } else if (shape === 'Curve') {
-                            }
+                            return <Polyline positions={[startPoint, startPoint]} ref={currPolyline} />
                         }
                     })()
                 }
@@ -218,13 +219,13 @@ const App = () => {
                         size="small"
                         value={shape}
                         exclusive
-                        onChange={(e, newShape) => setShape(newShape)}
+                        onChange={(e, newShape) => {setShape(newShape); handleMouseOut()}}
                     >
                         <ToggleButton value="Point">
                             Point
                         </ToggleButton>
-                        <ToggleButton value="Line">
-                            Line
+                        <ToggleButton value="Polyline">
+                            Poly
                         </ToggleButton>
                         <ToggleButton value="Curve">
                             Curve
@@ -232,10 +233,14 @@ const App = () => {
                         <ToggleButton value="Rectangle" disabled>
                             Rect
                         </ToggleButton>
-                        <ToggleButton value="Polyline" disabled>
-                            Poly
-                        </ToggleButton>
                     </ToggleButtonGroup>
+                    <Button variant="contained" color="primary"
+                        disabled={shape === 'Point'}
+                        style={{ margin: 5 }}
+                        onClick={handlePutDevices}
+                    >
+                        Put devices
+                    </Button>
                     <div style={{ width: '100%' }}>
                         <div style={{ display: 'inline-block', verticalAlign: 'text-top', margin: 5 }}>
                             <InputLabel id="show-all-types" style={{ fontSize: 10 }}>Show all</InputLabel>
