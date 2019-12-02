@@ -11,7 +11,7 @@ import { divIcon } from 'leaflet';
 import { Map as LeafletMap, Marker, Popup, TileLayer, Polyline } from "react-leaflet";
 // import './App.css';
 import useStateWithCallback from 'use-state-with-callback';
-import { resamplePolyline, splineCurve } from './Utils';
+import { resamplePolyline, splineCurve, arcCurveFromPoints } from './Utils';
 import { theDevices } from './DataContents';
 
 console.log(new Date());
@@ -120,6 +120,8 @@ export const App = () => {
             positions = resamplePolyline(positions, selection.length);
         } else if (shape === 'Curve') {
             positions = resamplePolyline(splineCurve(positions, 100), selection.length);
+        } else if (shape === 'Arc') {
+            positions = resamplePolyline(arcCurveFromPoints(positions, 400), selection.length);
         }
         let tempDevices = changeLocations(selectedType, selection, positions);
         setDevices(tempDevices);
@@ -138,6 +140,13 @@ export const App = () => {
             } else if (shape === 'Curve') {
                 const curve = splineCurve(points, 100);
                 currPolyline.current.leafletElement.setLatLngs(curve);
+            } else if (shape === 'Arc') {
+                if (points.length === 2) {
+                    currPolyline.current.leafletElement.setLatLngs(points);
+                } else {
+                    const curve = arcCurveFromPoints(points, 400);
+                    currPolyline.current.leafletElement.setLatLngs([points[0]].concat(curve));
+                }
             }
         }
     };
@@ -183,16 +192,13 @@ export const App = () => {
                 }
 
                 {
-                    (() => {
-                        if (startPoint) {
-                            return <Polyline positions={[startPoint, startPoint]} ref={currPolyline} />
-                        }
-                    })()
+                    !startPoint ? null :
+                        <Polyline positions={[startPoint, startPoint]} ref={currPolyline} />
                 }
 
             </LeafletMap>
             <Paper
-                style={{ position: 'absolute', top: 50, width: '30%', right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
+                style={{ position: 'absolute', height: '80%', top: 50, width: '30%', right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
             >
                 <div
                     style={{ margin: 10 }}
@@ -212,6 +218,9 @@ export const App = () => {
                         </ToggleButton>
                         <ToggleButton value="Curve">
                             Curve
+                        </ToggleButton>
+                        <ToggleButton value="Arc">
+                            Arc
                         </ToggleButton>
                         <ToggleButton value="Rectangle" disabled>
                             Rect
@@ -253,27 +262,40 @@ export const App = () => {
                         </div>
                     </div>
 
-                    <List style={{ overflow: 'auto', height: 'inherit' }}>
-                        {
-                            devices.find(d => d.type === selectedType).items.map((dev, index) =>
-                                <DeviceRow
-                                    key={dev.name}
-                                    dev={dev}
-                                    isSelected={selection.includes(index)}
-                                    onClick={e => handleSelectionClick(index, e.shiftKey)}
-                                    onDisableLocation={e => changeLocations(selectedType, [index], [undefined])}
-                                />
-                            )
-                        }
-                    </List >
+                    <div style={{ overflow: 'scroll', height: 'inherit', display: 'block' }}
+                    // inputProps={{ style: { overflow: 'scroll' } }}
+                    >
+                        <List>
+                            {
+                                devices.find(d => d.type === selectedType).items.map((dev, index) =>
+                                    <DeviceRow
+                                        key={dev.name}
+                                        dev={dev}
+                                        isSelected={selection.includes(index)}
+                                        onClick={e => handleSelectionClick(index, e.shiftKey)}
+                                        onDisableLocation={e => changeLocations(selectedType, [index], [undefined])}
+                                    />
+                                )
+                            }
+                        </List >
+                    </div >
                 </div>
+            </Paper>
+            <Paper
+                style={{ position: 'absolute', height: '20%', width: '30%', right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
+            >
                 <TextField
                     id="outlined-multiline-static"
-                    label="Json"
+                    // label="Json"
                     multiline
-                    rows="10"
-                    variant={"outlined"}
-                    style={{ position: 'absolute', bottom: 10, right: 10, left: 10, justifyContent: 'center' }}
+                    // rows="10"
+                    // variant={"outlined"}
+                    style={{
+                        position: 'absolute', overflow: 'scroll',
+                        top: 10, bottom: 10, right: 10, left: 10
+                        // , justifyContent: 'center'
+
+                    }}
                     inputProps={{ style: { fontSize: 10, lineHeight: 1 } }}
                     value={JSON.stringify(devices, null, 2)}
                     onChange={e => setDevices(JSON.parse(e.target.value))}

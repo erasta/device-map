@@ -82,3 +82,24 @@ export const splineCurve = (points, amount) => {
     }
     return ret;
 }
+
+export const arcCurve = (center, radius, fromAngle, toAngle, amount) => {
+    // console.log(center, radius, fromAngle, toAngle);
+    if (toAngle > fromAngle) toAngle -= Math.PI * 2;
+    let ret = new Array(amount);
+    for (let i = 0; i < amount; ++i) {
+        const t = i / (amount - 1);
+        const a = fromAngle * (1 - t) + toAngle * t;
+        ret[i] = [center[0] + radius * Math.cos(a), center[1] + radius * Math.sin(a)];
+    }
+    // console.log(ret);
+    return ret;
+}
+
+export const arcCurveFromPoints = (points, amount) => {
+    const p = points[0], v1 = points[1], v2 = points[2];
+    const a1 = Math.atan2(v1[1] - p[1], v1[0] - p[0]);
+    const a2 = Math.atan2(v2[1] - p[1], v2[0] - p[0]);
+    const curve = arcCurve(p, distance(p, v1), a1, a2, amount);
+    return curve;
+}
