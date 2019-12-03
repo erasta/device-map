@@ -198,7 +198,11 @@ export const App = () => {
 
             </LeafletMap>
             <Paper
-                style={{ position: 'absolute', height: '80%', top: 50, width: '30%', right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
+                style={{
+                    position: 'absolute', height: '80%', maxHeight: '75%', overflow: 'auto',
+                    top: 50, width: '30%', right: 50, bottom: 50,
+                    justifyContent: 'center', alignItems: 'center', zIndex: 1000
+                }}
             >
                 <div
                     style={{ margin: 10 }}
@@ -282,7 +286,11 @@ export const App = () => {
                 </div>
             </Paper>
             <Paper
-                style={{ position: 'absolute', height: '20%', width: '30%', right: 50, bottom: 50, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
+                style={{
+                    position: 'absolute', maxHeight: '10%', overflow: 'auto',
+                    height: '10%', width: '30%', right: 50, bottom: 50,
+                    justifyContent: 'center', alignItems: 'center', zIndex: 1000
+                }}
             >
                 <TextField
                     id="outlined-multiline-static"
