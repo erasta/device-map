@@ -1,4 +1,4 @@
-import { Button, InputLabel, List, MenuItem, Paper, Select, Switch } from '@material-ui/core';
+import { Button, List, Paper } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Map as LeafletMap, Polyline, TileLayer } from "react-leaflet";
 import { theDevices } from './DataContents';
@@ -6,6 +6,7 @@ import { DeviceMarker } from './DeviceMarker';
 import { DeviceRow } from './DeviceRow';
 import { JsonStreamer } from './JsonStreamer';
 import { ShapeChooser } from './ShapeChooser';
+import { TypeChooser } from './TypeChooser';
 import { arcCurveFromPoints, resamplePolyline, splineCurve } from './Utils';
 
 console.log(new Date());
@@ -183,34 +184,16 @@ export const App = () => {
                     >
                         Put devices
                     </Button>
-                    <div style={{ width: '100%' }}>
-                        <div style={{ display: 'inline-block', verticalAlign: 'text-top', margin: 5 }}>
-                            <InputLabel id="show-all-types" style={{ fontSize: 10 }}>Show all</InputLabel>
-                            <Switch id="show-all-types" color="primary" inputProps={{ 'aria-label': 'primary checkbox' }}
-                                value={showAll}
-                                onChange={e => setShowAll(e.target.checked)}
-                            />
-                        </div>
-                        <div style={{ display: 'inline-block', verticalAlign: 'text-top', margin: 5 }}>
-                            <InputLabel id="select-type" style={{ fontSize: 10 }}>Device Type</InputLabel>
-                            <Select
-                                id="select-type"
-                                value={selectedType}
-                                onChange={e => {
-                                    setSelection([]);
-                                    setSelectedType(e.target.value);
-                                }}
-                            >
-                                {
-                                    devices.map(dev => (
-                                        <MenuItem key={dev.type} value={dev.type}>
-                                            {dev.type}
-                                        </MenuItem>
-                                    ))
-                                }
-                            </Select>
-                        </div>
-                    </div>
+                    <TypeChooser
+                        selectedType={selectedType}
+                        onChange={newType => {
+                            setSelection([]);
+                            setSelectedType(newType);
+                        }}
+                        showAll={showAll}
+                        setShowAll={val => setShowAll(val)}
+                        typeOptions={devices.map(dev => { return { name: dev.type } })}
+                    />
 
                     <div style={{ overflow: 'scroll', height: 'inherit', display: 'block' }}
                     // inputProps={{ style: { overflow: 'scroll' } }}
