@@ -1,16 +1,10 @@
-import {
-    InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, IconButton, Switch, Button
-} from '@material-ui/core';
-import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
-import Paper from '@material-ui/core/Paper';
 import React, { useRef } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { Map as LeafletMap, Marker, Popup, TileLayer, Polyline } from "react-leaflet";
-// import './App.css';
-import useStateWithCallback from 'use-state-with-callback';
-import { resamplePolyline, splineCurve, arcCurveFromPoints } from './Utils';
+import { Button, IconButton, InputLabel, List, ListItem, ListItemText, MenuItem, Select, Switch, TextField } from '@material-ui/core';
+import Paper from '@material-ui/core/Paper';
+import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { Map as LeafletMap, Polyline, TileLayer } from "react-leaflet";
 import { theDevices } from './DataContents';
+import { arcCurveFromPoints, resamplePolyline, splineCurve } from './Utils';
 import { DeviceMarker } from './DeviceMarker';
 import { DeviceRow } from './DeviceRow';
 
