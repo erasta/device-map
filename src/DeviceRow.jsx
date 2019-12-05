@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
 import { IconButton, ListItem, ListItemText } from '@material-ui/core';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
+import React from 'react';
 
 export const DeviceRow = ({ dev, isSelected, onClick, onDisableLocation }) => (
     <ListItem

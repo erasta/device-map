@@ -1,11 +1,11 @@
 import { Button, InputLabel, List, MenuItem, Paper, Select, Switch } from '@material-ui/core';
-import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import React, { useRef } from 'react';
 import { Map as LeafletMap, Polyline, TileLayer } from "react-leaflet";
 import { theDevices } from './DataContents';
 import { DeviceMarker } from './DeviceMarker';
 import { DeviceRow } from './DeviceRow';
 import { JsonStreamer } from './JsonStreamer';
+import { ShapeChooser } from './ShapeChooser';
 import { arcCurveFromPoints, resamplePolyline, splineCurve } from './Utils';
 
 console.log(new Date());
@@ -72,7 +72,7 @@ export const App = () => {
 
     const handlePutDevices = () => {
         let positions = [startPoint].concat(markedPoints);
-        if (shape === 'Polyline') {
+        if (shape === 'Poly') {
             positions = resamplePolyline(positions, selection.length);
         } else if (shape === 'Curve') {
             positions = resamplePolyline(splineCurve(positions, 100), selection.length);
@@ -91,7 +91,7 @@ export const App = () => {
             if (hoverPoint) {
                 points.push(hoverPoint);
             }
-            if (shape === 'Polyline') {
+            if (shape === 'Poly') {
                 currPolyline.current.leafletElement.setLatLngs(points);
             } else if (shape === 'Curve') {
                 const curve = splineCurve(points, 100);
@@ -106,6 +106,14 @@ export const App = () => {
             }
         }
     };
+
+    const shapeOptions = [
+        { name: 'Point' },
+        { name: 'Poly' },
+        { name: 'Curve' },
+        { name: 'Arc' },
+        { name: 'Rect' }
+    ];
 
     const handleMouseMove = e => {
         renderShape([e.latlng.lat, e.latlng.lng]);
@@ -163,29 +171,11 @@ export const App = () => {
                 <div
                     style={{ margin: 10 }}
                 >
-                    <ToggleButtonGroup
-                        style={{ margin: 5 }}
-                        size="small"
-                        value={shape}
-                        exclusive
-                        onChange={(e, newShape) => setShape(newShape)}
-                    >
-                        <ToggleButton value="Point">
-                            Point
-                        </ToggleButton>
-                        <ToggleButton value="Polyline">
-                            Poly
-                        </ToggleButton>
-                        <ToggleButton value="Curve">
-                            Curve
-                        </ToggleButton>
-                        <ToggleButton value="Arc">
-                            Arc
-                        </ToggleButton>
-                        <ToggleButton value="Rectangle" disabled>
-                            Rect
-                        </ToggleButton>
-                    </ToggleButtonGroup>
+                    <ShapeChooser
+                        shape={shape}
+                        onChange={(val) => setShape(val)}
+                        shapeOptions={shapeOptions}
+                    />
                     <Button variant="contained" color="primary"
                         disabled={shape === 'Point'}
                         style={{ margin: 5 }}
