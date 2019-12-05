@@ -1,12 +1,20 @@
 export const lerp = (from, to, t) => {
-    return [from[0] * (1 - t) + to[0] * t, from[1] * (1 - t) + to[1] * t];
+    return from * (1 - t) + to * t;
+};
+
+export const lerpYX = (from, to, t0, t1) => {
+    return [lerp(from[0], to[0], t0), lerp(from[1], to[1], t1)];
+};
+
+export const lerpPoint = (from, to, t) => {
+    return [lerpYX(from[0], to[0], t, t), lerp(from[1], to[1], t, t)];
 };
 
 export const resampleLine = (from, to, num) => {
     let ret = new Array(num);
     ret[0] = from;
     for (let i = 1; i < num - 1; ++i) {
-        ret[i] = lerp(from, to, i / (num - 1));
+        ret[i] = lerpPoint(from, to, i / (num - 1));
     }
     ret[num - 1] = to;
     return ret;
@@ -35,7 +43,7 @@ export const findPositionOnPolyline = (points, pos) => {
             curr = after;
         } else {
             const fraction = (pos - curr) / dist;
-            return lerp(points[i], points[i + 1], fraction);
+            return lerpPoint(points[i], points[i + 1], fraction);
         }
     }
     return points[points.length - 1];
@@ -97,9 +105,18 @@ export const arcCurve = (center, radius, fromAngle, toAngle, amount) => {
 }
 
 export const arcCurveFromPoints = (points, amount) => {
-    const p = points[0], v1 = points[1], v2 = points[2];
+    const p = points[0], v1 = points[1], v2 = points[points.length - 1];
     const a1 = Math.atan2(v1[1] - p[1], v1[0] - p[0]);
     const a2 = Math.atan2(v2[1] - p[1], v2[0] - p[0]);
     const curve = arcCurve(p, distance(p, v1), a1, a2, amount);
     return curve;
+}
+
+export const partition = (arr, num) => {
+    let results = [];
+    let leg = Math.ceil(arr.length / num);
+    while (arr.length) {
+        results.push(arr.splice(0, leg));
+    }
+    return results;
 }

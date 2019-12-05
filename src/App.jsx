@@ -7,7 +7,7 @@ import { DeviceRow } from './DeviceRow';
 import { JsonStreamer } from './JsonStreamer';
 import { ShapeChooser } from './ShapeChooser';
 import { TypeChooser } from './TypeChooser';
-import { arcCurveFromPoints, resamplePolyline, splineCurve } from './Utils';
+import { arcCurveFromPoints, resamplePolyline, splineCurve, partition, lerpYX } from './Utils';
 
 console.log(new Date());
 
@@ -96,7 +96,24 @@ export const App = () => {
             toPositions: points => resamplePolyline(arcCurveFromPoints(points, 400), selection.length)
         },
         {
-            name: 'Rect', disabled: true
+            name: 'Rect',
+            toLine: points => [
+                [points[0][0], points[0][1]],
+                [points[1][0], points[0][1]],
+                [points[1][0], points[1][1]],
+                [points[0][0], points[1][1]],
+                [points[0][0], points[0][1]]
+            ],
+            toPositions: (points, rows = 3) => {
+                let ret = [];
+                const cols = Math.ceil(selection.length / rows);
+                for (let y = 0; y < rows; ++y) {
+                    for (let x = 0; x < cols; ++x) {
+                        ret.push(lerpYX(points[0], points[1], y / (rows - 1), x / (cols  - 1)));
+                    }
+                }
+                return ret;
+            }
         }
     ];
 
