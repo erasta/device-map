@@ -71,45 +71,42 @@ export const App = () => {
         }
     };
 
-    const handlePutDevices = () => {
-        let positions = [startPoint].concat(markedPoints);
-        if (shape === 'Poly') {
-            positions = resamplePolyline(positions, selection.length);
-        } else if (shape === 'Curve') {
-            positions = resamplePolyline(splineCurve(positions, 100), selection.length);
-        } else if (shape === 'Arc') {
-            positions = resamplePolyline(arcCurveFromPoints(positions, 400), selection.length);
-        }
-        let tempDevices = changeLocations(selectedType, selection, positions);
-        setDevices(tempDevices);
-        setStartPoint(undefined);
-        setSelection([]);
-    };
-
     const shapeOptions = [
         {
             name: 'Point',
-            toLine: points => []
+            toLine: points => [],
+            toPositions: points => [points[0]]
         },
         {
             name: 'Poly',
-            toLine: points => points
+            toLine: points => points,
+            toPositions: points => resamplePolyline(points, selection.length)
         },
         {
             name: 'Curve',
-            toLine: points => splineCurve(points, 100)
+            toLine: points => splineCurve(points, 100),
+            toPositions: points => resamplePolyline(splineCurve(points, 100), selection.length)
         },
         {
             name: 'Arc',
             toLine: points => {
                 if (points.length === 2) return points;
                 return [points[0]].concat(arcCurveFromPoints(points, 400));
-            }
+            },
+            toPositions: points => resamplePolyline(arcCurveFromPoints(points, 400), selection.length)
         },
         {
             name: 'Rect', disabled: true
         }
     ];
+
+    const handlePutDevices = () => {
+        let positions = [startPoint].concat(markedPoints);
+        positions = shapeData().toPositions(positions);
+        setDevices(changeLocations(selectedType, selection, positions));
+        setStartPoint(undefined);
+        setSelection([]);
+    };
 
     const shapeData = () => shapeOptions.find(s => s.name === shape);
 
