@@ -1,12 +1,12 @@
-import React, { useRef } from 'react';
-import { Button, IconButton, InputLabel, List, ListItem, ListItemText, MenuItem, Select, Switch, TextField } from '@material-ui/core';
-import Paper from '@material-ui/core/Paper';
+import { Button, InputLabel, List, MenuItem, Paper, Select, Switch } from '@material-ui/core';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
+import React, { useRef } from 'react';
 import { Map as LeafletMap, Polyline, TileLayer } from "react-leaflet";
 import { theDevices } from './DataContents';
-import { arcCurveFromPoints, resamplePolyline, splineCurve } from './Utils';
 import { DeviceMarker } from './DeviceMarker';
 import { DeviceRow } from './DeviceRow';
+import { JsonStreamer } from './JsonStreamer';
+import { arcCurveFromPoints, resamplePolyline, splineCurve } from './Utils';
 
 console.log(new Date());
 
@@ -241,30 +241,10 @@ export const App = () => {
                     </div >
                 </div>
             </Paper>
-            <Paper
-                style={{
-                    position: 'absolute', maxHeight: '10%', overflow: 'auto',
-                    height: '10%', width: '30%', right: 50, bottom: 50,
-                    justifyContent: 'center', alignItems: 'center', zIndex: 1000
-                }}
-            >
-                <TextField
-                    id="outlined-multiline-static"
-                    // label="Json"
-                    multiline
-                    // rows="10"
-                    // variant={"outlined"}
-                    style={{
-                        position: 'absolute', overflow: 'scroll',
-                        top: 10, bottom: 10, right: 10, left: 10
-                        // , justifyContent: 'center'
-
-                    }}
-                    inputProps={{ style: { fontSize: 10, lineHeight: 1 } }}
-                    value={JSON.stringify(devices, null, 2)}
-                    onChange={e => setDevices(JSON.parse(e.target.value))}
-                />
-            </Paper>
+            <JsonStreamer
+                json={devices}
+                onChange={(val) => setDevices(val)}
+            />
         </div>
     )
 }
