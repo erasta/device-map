@@ -86,35 +86,42 @@ export const App = () => {
         setSelection([]);
     };
 
+    const shapeOptions = [
+        {
+            name: 'Point',
+            toLine: points => []
+        },
+        {
+            name: 'Poly',
+            toLine: points => points
+        },
+        {
+            name: 'Curve',
+            toLine: points => splineCurve(points, 100)
+        },
+        {
+            name: 'Arc',
+            toLine: points => {
+                if (points.length === 2) return points;
+                return [points[0]].concat(arcCurveFromPoints(points, 400));
+            }
+        },
+        {
+            name: 'Rect', disabled: true
+        }
+    ];
+
+    const shapeData = () => shapeOptions.find(s => s.name === shape);
+
     const renderShape = (hoverPoint) => {
         if (startPoint) {
             let points = [startPoint].concat(markedPoints);
             if (hoverPoint) {
                 points.push(hoverPoint);
             }
-            if (shape === 'Poly') {
-                currPolyline.current.leafletElement.setLatLngs(points);
-            } else if (shape === 'Curve') {
-                const curve = splineCurve(points, 100);
-                currPolyline.current.leafletElement.setLatLngs(curve);
-            } else if (shape === 'Arc') {
-                if (points.length === 2) {
-                    currPolyline.current.leafletElement.setLatLngs(points);
-                } else {
-                    const curve = arcCurveFromPoints(points, 400);
-                    currPolyline.current.leafletElement.setLatLngs([points[0]].concat(curve));
-                }
-            }
+            currPolyline.current.leafletElement.setLatLngs(shapeData().toLine(points));
         }
     };
-
-    const shapeOptions = [
-        { name: 'Point' },
-        { name: 'Poly' },
-        { name: 'Curve' },
-        { name: 'Arc' },
-        { name: 'Rect' }
-    ];
 
     const handleMouseMove = e => {
         renderShape([e.latlng.lat, e.latlng.lng]);

@@ -10,7 +10,7 @@ export const ShapeChooser = ({ shape, onChange, shapeOptions }) => (
         onChange={(e, newShape) => onChange(newShape)}
     >
         {shapeOptions.map(opt =>
-            <ToggleButton value={opt.name} key={opt.name}>
+            <ToggleButton value={opt.name} key={opt.name} disabled={opt.disabled}>
                 {opt.name}
             </ToggleButton>
         )}
