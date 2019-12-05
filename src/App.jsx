@@ -3,58 +3,20 @@ import {
 } from '@material-ui/core';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import Paper from '@material-ui/core/Paper';
-import LocationOnIcon from '@material-ui/icons/LocationOn';
-import Icon from '@material-ui/core/Icon';
 import React, { useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { divIcon } from 'leaflet';
 import { Map as LeafletMap, Marker, Popup, TileLayer, Polyline } from "react-leaflet";
 // import './App.css';
 import useStateWithCallback from 'use-state-with-callback';
 import { resamplePolyline, splineCurve, arcCurveFromPoints } from './Utils';
+import { Map as LeafletMap, Polyline, TileLayer } from "react-leaflet";
 import { theDevices } from './DataContents';
+import { DeviceMarker } from './DeviceMarker';
+import { DeviceRow } from './DeviceRow';
 
 console.log(new Date());
 
 const position = [32.081128, 34.779729];
-
-const DeviceRow = ({ dev, isSelected, onClick, onDisableLocation }) => (
-    <ListItem
-        key={dev.name}
-        button
-        selected={isSelected}
-        onClick={onClick}
-    >
-        <ListItemText primary={dev.name} />
-        {!dev.position ? null :
-            <IconButton aria-label="Disable location" size="small"
-                onClick={onDisableLocation}
-            >
-                <LocationOnIcon />
-            </IconButton>
-        }
-    </ListItem>
-)
-
-const DeviceMarker = ({ device, isSelected, isTypeSelected }) =>
-    (
-        <Marker key={device.name}
-            position={device.position}
-            title={device.name}
-            icon={divIcon({
-                iconSize: [20, 20],
-                html: renderToStaticMarkup(
-                    <i className=" fa fa-map-marker-alt fa-2x"
-                        style={{ color: (isTypeSelected ? (isSelected ? '#297A31' : '#1B2C6F') : '#888888') }}
-                    />
-                )
-            })}
-        >
-            <Popup>
-                {device.name + ' at (' + device.position + ')'}
-            </Popup>
-        </Marker >
-    )
 
 let lastIndex;
 let markedPoints;
