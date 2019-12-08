@@ -73,8 +73,9 @@ export const App = () => {
         }
     };
 
-    const rectByAngle = (p0, p1, angle) => {
-        return [p0, [p1[0], p0[1]], p1, [p0[0], p1[1]]];
+    const rectByAngle = (points, angle) => {
+        // return [p0, [p1[0], p0[1]], p1, [p0[0], p1[1]]];
+        return points.concat([points[0], points[0], points[0], points[0]]);
     }
 
     const shapeOptions = [
@@ -103,12 +104,12 @@ export const App = () => {
         },
         {
             name: 'Rect',
-            toLine: points => {
-                const [nw, ne, se, sw] = rectByAngle(points[0], points[1]);
+            toLine: (points, angle = rectAngle)=> {
+                const [nw, ne, se, sw] = rectByAngle(points, angle);
                 return [nw, ne, se, sw, nw];
             },
             toPositions: (points, rows = rectRows, angle = rectAngle) => {
-                const [nw, ne, se, sw] = rectByAngle(points[0], points[1]);
+                const [nw, ne, se, sw] = rectByAngle(points, angle);
                 let ret = [];
                 const cols = Math.ceil(selection.length / rows);
                 for (let y = 0; y < rows; ++y) {
@@ -206,7 +207,7 @@ export const App = () => {
                     />
                     {shape !== 'Rect' ? null :
                         <div style={{ display: 'block' }}>
-                            <div style={{ display: 'inline-block', margin: 5, width: '40%' }}>
+                            {/* <div style={{ display: 'inline-block', margin: 5, width: '40%' }}>
                                 <InputLabel id="rect-angle" style={{ fontSize: 10 }}>Rect angle</InputLabel>
                                 <Slider
                                     onChange={(e, v) => setRectAngle(v)}
@@ -217,7 +218,7 @@ export const App = () => {
                                     min={0}
                                     max={90}
                                 />
-                            </div>
+                            </div> */}
                             <div style={{ display: 'inline-block', margin: 5, width: '40%' }}>
                                 <InputLabel id="rect-rows" style={{ fontSize: 10 }}>Rect rows</InputLabel>
                                 <Slider
