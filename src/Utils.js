@@ -7,7 +7,7 @@ export const lerpYX = (from, to, t0, t1) => {
 };
 
 export const lerpPoint = (from, to, t) => {
-    return [lerpYX(from[0], to[0], t, t), lerp(from[1], to[1], t, t)];
+    return lerpYX(from, to, t, t);
 };
 
 export const resampleLine = (from, to, num) => {

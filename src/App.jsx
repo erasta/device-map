@@ -1,4 +1,4 @@
-import { Button, List, Paper } from '@material-ui/core';
+import { Button, InputLabel, List, Paper, Slider } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Map as LeafletMap, Polyline, TileLayer } from "react-leaflet";
 import { theDevices } from './DataContents';
@@ -7,7 +7,7 @@ import { DeviceRow } from './DeviceRow';
 import { JsonStreamer } from './JsonStreamer';
 import { ShapeChooser } from './ShapeChooser';
 import { TypeChooser } from './TypeChooser';
-import { arcCurveFromPoints, resamplePolyline, splineCurve, partition, lerpYX } from './Utils';
+import { arcCurveFromPoints, lerpPoint, resamplePolyline, splineCurve } from './Utils';
 
 console.log(new Date());
 
@@ -26,6 +26,8 @@ export const App = () => {
     const [showAll, setShowAll] = React.useState(false);
     const [shape, setShape] = React.useState("Point");
     const [startPoint, setStartPoint] = React.useState(undefined);
+    const [rectAngle, setRectAngle] = React.useState(0);
+    const [rectRows, setRectRows] = React.useState(3);
 
     const changeLocations = (type, indices, newLocations) => {
         let tempDevices = devices.slice();
@@ -71,6 +73,10 @@ export const App = () => {
         }
     };
 
+    const rectByAngle = (p0, p1, angle) => {
+        return [p0, [p1[0], p0[1]], p1, [p0[0], p1[1]]];
+    }
+
     const shapeOptions = [
         {
             name: 'Point',
@@ -97,19 +103,19 @@ export const App = () => {
         },
         {
             name: 'Rect',
-            toLine: points => [
-                [points[0][0], points[0][1]],
-                [points[1][0], points[0][1]],
-                [points[1][0], points[1][1]],
-                [points[0][0], points[1][1]],
-                [points[0][0], points[0][1]]
-            ],
-            toPositions: (points, rows = 3) => {
+            toLine: points => {
+                const [nw, ne, se, sw] = rectByAngle(points[0], points[1]);
+                return [nw, ne, se, sw, nw];
+            },
+            toPositions: (points, rows = rectRows, angle = rectAngle) => {
+                const [nw, ne, se, sw] = rectByAngle(points[0], points[1]);
                 let ret = [];
                 const cols = Math.ceil(selection.length / rows);
                 for (let y = 0; y < rows; ++y) {
+                    const west = lerpPoint(nw, sw, y / (rows - 1));
+                    const east = lerpPoint(ne, se, y / (rows - 1));
                     for (let x = 0; x < cols; ++x) {
-                        ret.push(lerpYX(points[0], points[1], y / (rows - 1), x / (cols  - 1)));
+                        ret.push(lerpPoint(west, east, x / (cols - 1)));
                     }
                 }
                 return ret;
@@ -198,6 +204,34 @@ export const App = () => {
                         onChange={(val) => setShape(val)}
                         shapeOptions={shapeOptions}
                     />
+                    {shape !== 'Rect' ? null :
+                        <div style={{ display: 'block' }}>
+                            <div style={{ display: 'inline-block', margin: 5, width: '40%' }}>
+                                <InputLabel id="rect-angle" style={{ fontSize: 10 }}>Rect angle</InputLabel>
+                                <Slider
+                                    onChange={(e, v) => setRectAngle(v)}
+                                    value={rectAngle}
+                                    defaultValue={0}
+                                    id="rect-angle"
+                                    valueLabelDisplay="auto"
+                                    min={0}
+                                    max={90}
+                                />
+                            </div>
+                            <div style={{ display: 'inline-block', margin: 5, width: '40%' }}>
+                                <InputLabel id="rect-rows" style={{ fontSize: 10 }}>Rect rows</InputLabel>
+                                <Slider
+                                    onChange={(e, v) => setRectRows(v)}
+                                    value={rectRows}
+                                    defaultValue={3}
+                                    id="rect-rows"
+                                    valueLabelDisplay="auto"
+                                    min={2}
+                                    max={20}
+                                />
+                            </div>
+                        </div>
+                    }
                     <Button variant="contained" color="primary"
                         disabled={shape === 'Point'}
                         style={{ margin: 5 }}
