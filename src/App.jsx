@@ -1,4 +1,4 @@
-import { Button, InputLabel, List, Paper, Slider } from '@material-ui/core';
+import { Button, InputLabel, List, Paper, Slider, Switch } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Map as LeafletMap, Polyline, TileLayer } from "react-leaflet";
 import { theDevices } from './DataContents';
@@ -28,6 +28,7 @@ export const App = () => {
     const [startPoint, setStartPoint] = React.useState(undefined);
     const [rectAngle, setRectAngle] = React.useState(0);
     const [rectRows, setRectRows] = React.useState(3);
+    const [devicesShowName, setDevicesShowName] = React.useState(false);
 
     const changeLocations = (type, indices, newLocations) => {
         let tempDevices = devices.slice();
@@ -104,7 +105,7 @@ export const App = () => {
         },
         {
             name: 'Rect',
-            toLine: (points, angle = rectAngle)=> {
+            toLine: (points, angle = rectAngle) => {
                 const [nw, ne, se, sw] = rectByAngle(points, angle);
                 return [nw, ne, se, sw, nw];
             },
@@ -173,6 +174,7 @@ export const App = () => {
                                     return <DeviceMarker key={dev.name} device={dev}
                                         isSelected={selection.includes(index)}
                                         isTypeSelected={devType.type === selectedType}
+                                        shouldShowName={devicesShowName}
                                     />
                                 } else {
                                     return null;
@@ -250,6 +252,13 @@ export const App = () => {
                         setShowAll={val => setShowAll(val)}
                         typeOptions={devices.map(dev => { return { name: dev.type } })}
                     />
+                    <div style={{ display: 'inline-block', verticalAlign: 'text-top', margin: 5 }}>
+                        <InputLabel id="show-all-types" style={{ fontSize: 10 }}>Devices show name</InputLabel>
+                        <Switch id="show-all-types" color="primary" inputProps={{ 'aria-label': 'primary checkbox' }}
+                            value={devicesShowName}
+                            onChange={e => setDevicesShowName(e.target.checked)}
+                        />
+                    </div>
 
                     <div style={{ overflow: 'scroll', height: 'inherit', display: 'block' }}
                     // inputProps={{ style: { overflow: 'scroll' } }}
