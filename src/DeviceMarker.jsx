@@ -10,9 +10,14 @@ export const DeviceMarker = ({ device, isSelected, isTypeSelected }) => (
         icon={divIcon({
             iconSize: [20, 20],
             html: renderToStaticMarkup(
-                <i className=" fa fa-map-marker-alt fa-2x"
-                    style={{ color: (isTypeSelected ? (isSelected ? '#297A31' : '#1B2C6F') : '#888888') }}
-                />
+                <div>
+                    <i className=" fa fa-map-marker-alt fa-2x"
+                        style={{ color: (isTypeSelected ? (isSelected ? '#297A31' : '#1B2C6F') : '#888888') }}
+                    />
+                    <span style={{ backgroundColor: "yellow", padding: 3, borderColor: "black" }}>
+                        {device.name.replace(/ /g, '\u00a0')}
+                    </span>
+                </div>
             )
         })}
     >
