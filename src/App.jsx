@@ -1,6 +1,7 @@
 import React from 'react';
 import { theDevices, deviceTypes, deviceForType1 } from './DataContents';
 import { DeviceEditor } from './DeviceEditor';
+import { CircularProgress } from '@material-ui/core';
 
 console.log(new Date());
 
@@ -51,8 +52,9 @@ export class App extends React.Component {
         }, 3000);
     }
     render() {
-        if (this.state.devices.filter(d => d.items && d.type).length === 0) {
-            return <div></div>;
+        const goodDevices = this.state.devices.filter(d => d.items && d.type);
+        if (goodDevices.length === 0 || this.state.devices.length !== goodDevices.length) {
+            return <CircularProgress style={{ marginLeft: '50%', marginTop: '40vh' }} />;
         } else {
             return (
                 <DeviceEditor
