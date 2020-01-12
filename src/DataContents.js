@@ -1,3 +1,59 @@
+export const deviceTypes =
+    [
+        {
+            "id": "1",
+            "key": "9f77ad3d-99a5-439e-a65b-d84d5e189839",
+            "name": "dev1",
+            "numberOfDevices": 1,
+            "properties": [
+                {
+                    "key": "c833a1c3-caed-4da1-8176-00af73894eab",
+                    "type": "boolean",
+                    "id": "",
+                    "label": "Boolean",
+                    "description": "a short description of the field",
+                    "prefix": "",
+                    "suffix": "",
+                    "required": false,
+                    "template": "",
+                    "multipleValues": false,
+                    "trialField": false
+                },
+                {
+                    "key": "64e575cb-3075-41dd-854c-22856cbed4be",
+                    "type": "textArea",
+                    "id": "",
+                    "label": "Text Area",
+                    "description": "a short description of the field",
+                    "prefix": "",
+                    "suffix": "",
+                    "required": false,
+                    "template": "",
+                    "multipleValues": false,
+                    "trialField": false
+                }
+            ]
+        }
+    ];
+export const deviceForType1 =
+    [
+        {
+            "key": "5dc17752abba6cf7e4b698cd_1572968602700",
+            "id": "d1",
+            "name": "dev1 ",
+            "deviceTypeKey": "9f77ad3d-99a5-439e-a65b-d84d5e189839",
+            "properties": [
+                {
+                    "key": "c833a1c3-caed-4da1-8176-00af73894eab",
+                    "val": ""
+                },
+                {
+                    "key": "64e575cb-3075-41dd-854c-22856cbed4be",
+                    "val": ""
+                }
+            ]
+        }
+    ];
 export const theDevices = [
     {
         "type": "wind",
