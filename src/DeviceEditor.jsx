@@ -1,12 +1,12 @@
 import { Button, InputLabel, List, Paper, Slider, Switch } from '@material-ui/core';
 import React, { useRef } from 'react';
-import { Map as LeafletMap, Polyline, TileLayer } from "react-leaflet";
+import { Map as LeafletMap, Polyline, TileLayer, LayersControl } from "react-leaflet";
 import { DeviceMarker } from './DeviceMarker';
 import { DeviceRow } from './DeviceRow';
 import { JsonStreamer } from './JsonStreamer';
 import { ShapeChooser } from './ShapeChooser';
 import { TypeChooser } from './TypeChooser';
-import { arcCurveFromPoints, lerpPoint, resamplePolyline, splineCurve } from './Utils';
+import { arcCurveFromPoints, lerpPoint, resamplePolyline, splineCurve, polylineDistance, distToText } from './Utils';
 
 const position = [32.081128, 34.779729];
 
@@ -16,6 +16,7 @@ let markedPoints;
 export const DeviceEditor = ({ devices, setDevices }) => {
     const mapElement = useRef(null);
     const currPolyline = useRef(null);
+    const auxPolyline = useRef(null);
 
     const [selectedType, setSelectedType] = React.useState(devices[0].type);
     const [selection, setSelection] = React.useState([]);
@@ -84,19 +85,20 @@ export const DeviceEditor = ({ devices, setDevices }) => {
         },
         {
             name: 'Poly',
-            toLine: points => points,
+            toLine: points => [points],
             toPositions: points => resamplePolyline(points, selection.length)
         },
         {
             name: 'Curve',
-            toLine: points => splineCurve(points, 100),
+            toLine: points => [splineCurve(points, 100)],
             toPositions: points => resamplePolyline(splineCurve(points, 100), selection.length)
         },
         {
             name: 'Arc',
             toLine: points => {
-                if (points.length === 2) return points;
-                return [points[0]].concat(arcCurveFromPoints(points, 400));
+                if (points.length <= 2) return [points];
+                const arc = arcCurveFromPoints(points, 400);
+                return [[points[0], arc[0]], arc];
             },
             toPositions: points => resamplePolyline(arcCurveFromPoints(points, 400), selection.length)
         },
@@ -104,7 +106,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
             name: 'Rect',
             toLine: (points, angle = rectAngle) => {
                 const [nw, ne, se, sw] = rectByAngle(points, angle);
-                return [nw, ne, se, sw, nw];
+                return [[nw, ne, se, sw, nw]];
             },
             toPositions: (points, rows = rectRows, angle = rectAngle) => {
                 const [nw, ne, se, sw] = rectByAngle(points, angle);
@@ -132,13 +134,30 @@ export const DeviceEditor = ({ devices, setDevices }) => {
 
     const shapeData = () => shapeOptions.find(s => s.name === shape);
 
+    const collectPoints = (hoverPoint) => {
+        if (!startPoint) return undefined;
+        let points = [startPoint].concat(markedPoints);
+        if (hoverPoint) {
+            points.push(hoverPoint);
+        }
+        return points;
+    };
+
+    const setLatLngsWithDist = (leafletElement, points) => {
+        leafletElement.setLatLngs(points);
+        const dist = polylineDistance(leafletElement.getLatLngs());
+        if (dist > 0) {
+            leafletElement.bindTooltip(distToText(dist)).openTooltip();
+        }
+    };
+
     const renderShape = (hoverPoint) => {
-        if (startPoint) {
-            let points = [startPoint].concat(markedPoints);
-            if (hoverPoint) {
-                points.push(hoverPoint);
-            }
-            currPolyline.current.leafletElement.setLatLngs(shapeData().toLine(points));
+        const points = collectPoints(hoverPoint);
+        if (!points || !points.length) return;
+        const shownPolylines = shapeData().toLine(points);
+        setLatLngsWithDist(currPolyline.current.leafletElement, shownPolylines[0]);
+        if (shape === 'Arc') {
+            setLatLngsWithDist(auxPolyline.current.leafletElement, shownPolylines.length > 1 ? shownPolylines[1] : []);
         }
     };
 
@@ -151,18 +170,28 @@ export const DeviceEditor = ({ devices, setDevices }) => {
     };
 
     return (
-        <div className="App">
-            <LeafletMap center={position} zoom={14}
+        <div className="App" style={{ position: 'relative', height: '100vh' }}>
+            <LeafletMap center={position} zoom={15}
                 ref={mapElement}
-                style={{ width: '100%', height: '100vh' }}
+                style={{ width: '70%', position: 'absolute', top: 0, bottom: 0, right: 0 }}
                 onClick={handleMapClick}
                 onMouseMove={handleMouseMove}
                 onMouseOut={handleMouseOut}
             >
-                <TileLayer
-                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+                <LayersControl position="topright">
+                    <LayersControl.BaseLayer name="Carto" checked={true}>
+                        <TileLayer
+                            attribution='&copy; <a href="https://carto.com">Carto</a> contributors'
+                            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png"
+                        />
+                    </LayersControl.BaseLayer>
+                    <LayersControl.BaseLayer name="OpenStreetMap">
+                        <TileLayer
+                            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                    </LayersControl.BaseLayer>
+                </LayersControl>
                 {
                     devices.map(devType => {
                         if (showAll || (devType.type === selectedType)) {
@@ -185,15 +214,20 @@ export const DeviceEditor = ({ devices, setDevices }) => {
 
                 {
                     !startPoint ? null :
-                        <Polyline positions={[startPoint, startPoint]} ref={currPolyline} />
+                        <>
+                            <Polyline positions={[]} ref={currPolyline} />
+                            {
+                                shape !== 'Arc' ? null :
+                                    <Polyline positions={[]} ref={auxPolyline} />
+                            }
+                        </>
                 }
 
             </LeafletMap>
             <Paper
                 style={{
-                    position: 'absolute', height: '80%', maxHeight: '75%', overflow: 'auto',
-                    top: 50, width: '30%', right: 50, bottom: 50,
-                    justifyContent: 'center', alignItems: 'center', zIndex: 1000
+                    position: 'absolute', height: '88%', overflow: 'auto', top: 0, width: '28%',
+                    left: 0, justifyContent: 'center', alignItems: 'center', zIndex: 1000
                 }}
             >
                 <div
