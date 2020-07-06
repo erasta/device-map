@@ -6,7 +6,7 @@ import { DeviceRow } from './DeviceRow';
 import { JsonStreamer } from './JsonStreamer';
 import { ShapeChooser } from './ShapeChooser';
 import { TypeChooser } from './TypeChooser';
-import { arcCurveFromPoints, lerpPoint, resamplePolyline, splineCurve, polylineDistance, distToText } from './Utils';
+import { arcCurveFromPoints, lerpPoint, resamplePolyline, splineCurve, polylineDistance, distToText, rectByAngle } from './Utils';
 import { MapLayersControl } from './MapLayersControl';
 
 const position = [32.081128, 34.779729];
@@ -28,9 +28,9 @@ const DeviceEditor = ({ devices, setDevices }) => {
     const [devicesShowName, setDevicesShowName] = React.useState(false);
 
 
-    useEffect(() => {
-        mapElement.current.leafletElement.invalidateSize();
-    }, [mapElement])
+    // useEffect(() => {
+    //     mapElement.current.leafletElement.invalidateSize();
+    // }, [mapElement])
 
     const changeLocations = (type, indices, newLocations) => {
         let tempDevices = JSON.parse(JSON.stringify(devices));
@@ -72,12 +72,6 @@ const DeviceEditor = ({ devices, setDevices }) => {
             setMarkedPoints(markedPoints.concat([currPoint]));
         }
     };
-
-    /** @returns Rectangle as an array of its 4 points */
-    const rectByAngle = (points, angle) => {
-        // return [p0, [p1[0], p0[1]], p1, [p0[0], p1[1]]];
-        return points.concat([points[0], points[0], points[0], points[0]]).slice(0, 4);
-    }
 
     const shapeOptions = [
         {
