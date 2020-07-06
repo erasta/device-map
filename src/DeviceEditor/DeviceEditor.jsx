@@ -1,18 +1,19 @@
 import { Button, InputLabel, List, Paper, Slider, Switch } from '@material-ui/core';
 import React, { useRef, useEffect } from 'react';
-import { Map as LeafletMap, Polyline, TileLayer, LayersControl, ImageOverlay } from "react-leaflet";
+import { Map as LeafletMap, Polyline } from "react-leaflet";
 import { DeviceMarker } from './DeviceMarker';
 import { DeviceRow } from './DeviceRow';
 import { JsonStreamer } from './JsonStreamer';
 import { ShapeChooser } from './ShapeChooser';
 import { TypeChooser } from './TypeChooser';
 import { arcCurveFromPoints, lerpPoint, resamplePolyline, splineCurve, polylineDistance, distToText } from './Utils';
+import { MapLayersControl } from './MapLayersControl';
 
 const position = [32.081128, 34.779729];
 
 let lastIndex;
 
-export const DeviceEditor = ({ devices, setDevices }) => {
+const DeviceEditor = ({ devices, setDevices }) => {
     const mapElement = useRef(null);
     const currPolyline = useRef(null);
     const auxPolyline = useRef(null);
@@ -25,6 +26,11 @@ export const DeviceEditor = ({ devices, setDevices }) => {
     const [rectAngle, setRectAngle] = React.useState(0);
     const [rectRows, setRectRows] = React.useState(3);
     const [devicesShowName, setDevicesShowName] = React.useState(false);
+
+
+    useEffect(() => {
+        mapElement.current.leafletElement.invalidateSize();
+    }, [mapElement])
 
     const changeLocations = (type, indices, newLocations) => {
         let tempDevices = JSON.parse(JSON.stringify(devices));
@@ -160,34 +166,20 @@ export const DeviceEditor = ({ devices, setDevices }) => {
     })
 
     return (
-        <div className="App" style={{ position: 'relative', height: '100vh' }}>
-            <LeafletMap center={position} zoom={15}
+        <div className="App" style={{ position: 'relative', height: "100vh" }}>
+            <LeafletMap
+                center={position}
+                zoom={15}
                 ref={mapElement}
-                style={{ width: '70%', position: 'absolute', top: 0, bottom: 0, right: 0 }}
+                style={{ height: "100%", width: '70%', position: 'absolute', top: 0, bottom: 0, right: 0 }}
                 onClick={handleMapClick}
                 onMouseMove={handleMouseMove}
                 onMouseOut={handleMouseOut}
+                preferCanvas={true}
             >
-                <LayersControl position="topright">
-                    <LayersControl.BaseLayer name="Carto" checked={true}>
-                        <TileLayer
-                            attribution='&copy; <a href="https://carto.com">Carto</a> contributors'
-                            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png"
-                        />
-                    </LayersControl.BaseLayer>
-                    <LayersControl.BaseLayer name="OpenStreetMap">
-                        <TileLayer
-                            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-                    </LayersControl.BaseLayer>
-                    <LayersControl.BaseLayer name="Image">
-                        <ImageOverlay
-                            url="https://cdn.vox-cdn.com/thumbor/HKALidP1Nm7vvd6GrsLmUCSVlEw=/0x0:2048x2732/1200x800/filters:focal(540x2092:866x2418)/cdn.vox-cdn.com/uploads/chorus_image/image/52202887/super_mario_run_ipad_screenshot_01_2048.0.jpeg"
-                            bounds={[[31.8, 34.2], [32.3, 35.2]]}
-                        />
-                    </LayersControl.BaseLayer>
-                </LayersControl>
+
+                <MapLayersControl />
+
                 {
                     devices.map(devType => {
                         if (showAll || (devType.type === selectedType)) {
@@ -236,18 +228,6 @@ export const DeviceEditor = ({ devices, setDevices }) => {
                     />
                     {shape !== 'Rect' ? null :
                         <div style={{ display: 'block' }}>
-                            {/* <div style={{ display: 'inline-block', margin: 5, width: '40%' }}>
-                                <InputLabel id="rect-angle" style={{ fontSize: 10 }}>Rect angle</InputLabel>
-                                <Slider
-                                    onChange={(e, v) => setRectAngle(v)}
-                                    value={rectAngle}
-                                    defaultValue={0}
-                                    id="rect-angle"
-                                    valueLabelDisplay="auto"
-                                    min={0}
-                                    max={90}
-                                />
-                            </div> */}
                             <div style={{ display: 'inline-block', margin: 5, width: '40%' }}>
                                 <InputLabel id="rect-rows" style={{ fontSize: 10 }}>Rect rows</InputLabel>
                                 <Slider
@@ -315,3 +295,4 @@ export const DeviceEditor = ({ devices, setDevices }) => {
         </div>
     )
 }
+export default React.memo(DeviceEditor, (prevState, nextState) => prevState.show === nextState.show);
