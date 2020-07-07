@@ -30,3 +30,19 @@ export const sortDevices = (deviceTypes) => {
     });
     return deviceTypes;
 }
+
+export const findDevicesChanged = (oldDeviceTypes, newDeviceTypes) => {
+    let ret = [];
+    newDeviceTypes.forEach(newDevType => {
+        const oldDevType = oldDeviceTypes.find(ty => ty.key === newDevType.key);
+        if (oldDevType && oldDevType.items && newDevType.items) {
+            newDevType.items.forEach(newDev => {
+                const oldDev = oldDevType.items.find(d => d.key === newDev.key);
+                if (oldDev && JSON.stringify(oldDev) !== JSON.stringify(newDev)) {
+                    ret.push({ dev: newDev, type: newDevType });
+                }
+            })
+        }
+    });
+    return ret;
+}

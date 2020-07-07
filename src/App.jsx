@@ -2,12 +2,11 @@ import React from 'react';
 import { deviceTypes, deviceForType } from './DataContents';
 import { DeviceEditor } from './DeviceEditor/DeviceEditor';
 import { CircularProgress } from '@material-ui/core';
-import { sortDevices } from './DeviceEditor/DeviceUtils';
+import { sortDevices, findDevicesChanged } from './DeviceEditor/DeviceUtils';
 
 console.log(new Date());
 
 const newdev = sortDevices(deviceTypes.map((type, i) => {
-    type.type = type.name;
     type.items = deviceForType[i];
     return type;
 }));
@@ -17,7 +16,7 @@ export const App = () => {
 
     console.log('appdev', devices)
 
-    const goodDevices = devices.filter(d => d.items && d.type);
+    const goodDevices = devices.filter(d => d.items && d.name);
 
     if (goodDevices.length === 0 || devices.length !== goodDevices.length) {
         return <CircularProgress style={{ marginLeft: '50%', marginTop: '40vh' }} />;
@@ -27,16 +26,9 @@ export const App = () => {
             <DeviceEditor
                 devices={devices}
                 setDevices={(newDevices) => {
-                    newDevices.forEach(newDevType => {
-                        const oldDevType = devices.find(ty => ty.type === newDevType.type);
-                        if (oldDevType && oldDevType.items && newDevType.items) {
-                            newDevType.items.forEach(newDev => {
-                                const oldDev = oldDevType.items.find(d => d.key === newDev.key);
-                                if (oldDev && JSON.stringify(oldDev) !== JSON.stringify(newDev)) {
-                                    console.log('change', newDev);
-                                }
-                            })
-                        }
+                    findDevicesChanged(devices, newDevices).forEach(changed => {
+                        const { dev } = changed;
+                        console.log('change', dev);
                     });
                     console.log('newDevices', newDevices)
                     setDevices(JSON.parse(JSON.stringify(newDevices)));

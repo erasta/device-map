@@ -19,7 +19,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
     const currPolyline = useRef(null);
     const auxPolyline = useRef(null);
 
-    const [selectedType, setSelectedType] = React.useState(devices[0].type);
+    const [selectedType, setSelectedType] = React.useState(devices[0].name);
     const [selection, setSelection] = React.useState([]);
     const [showAll, setShowAll] = React.useState(false);
     const [shape, setShape] = React.useState("Point");
@@ -36,7 +36,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
 
     const changeLocations = (type, indices, newLocations) => {
         let tempDevices = JSON.parse(JSON.stringify(devices));
-        let typeDevices = tempDevices.find(d => d.type === type);
+        let typeDevices = tempDevices.find(d => d.name === type);
         for (let i = 0; i < indices.length; ++i) {
             const loc = newLocations[Math.min(i, newLocations.length - 1)];
             setDeviceLocation(typeDevices.items[indices[i]], typeDevices, loc);
@@ -179,7 +179,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
 
                 {
                     devices.map(devType => {
-                        if (showAll || (devType.type === selectedType)) {
+                        if (showAll || (devType.name === selectedType)) {
                             return devType.items.map((dev, index) => {
                                 const loc = getDeviceLocation(dev, devType);
                                 if (!loc) return null;
@@ -187,7 +187,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
                                     key={dev.key} device={dev}
                                     devLocation={loc}
                                     isSelected={selection.includes(index)}
-                                    isTypeSelected={devType.type === selectedType}
+                                    isTypeSelected={devType.name === selectedType}
                                     shouldShowName={devicesShowName}
                                 />
                             });
@@ -254,7 +254,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
                         }}
                         showAll={showAll}
                         setShowAll={val => setShowAll(val)}
-                        typeOptions={devices.map(dev => { return { name: dev.type } })}
+                        typeOptions={devices.map(dev => { return { name: dev.name } })}
                     />
                     <div style={{ display: 'inline-block', verticalAlign: 'text-top', margin: 5 }}>
                         <InputLabel id="show-all-types" style={{ fontSize: 10 }}>Devices show name</InputLabel>
@@ -269,7 +269,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
                     >
                         <List>
                             {
-                                devices.filter(d => d.type === selectedType).map(devItems =>
+                                devices.filter(d => d.name === selectedType).map(devItems =>
                                     devItems.items.map((dev, index) =>
                                         <DeviceRow
                                             key={dev.key}
