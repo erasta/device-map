@@ -4,11 +4,16 @@ export const getTypeLocationProp = (deviceType) => {
     return locationProp.key;
 }
 
+export const getDeviceLocationProp = (device, deviceType) => {
+    const key = getTypeLocationProp(deviceType);
+    const prop = device.properties.find(pr => pr.key === key);
+    if (!prop || !prop.val || !prop.val.coordinates) return undefined;
+    return prop;
+}
+
 export const getDeviceLocation = (device, deviceType) => {
-    const locationProp = getTypeLocationProp(deviceType);
-    const pos = device.properties.find(pr => pr.key === locationProp);
-    if (!pos || !pos.val || !pos.val.coordinates) return undefined;
-    return pos.val.coordinates;
+    const prop = getDeviceLocationProp(device, deviceType);
+    if (prop) return prop.val.coordinates;
 }
 
 export const setDeviceLocation = (device, deviceType, newLocation) => {
