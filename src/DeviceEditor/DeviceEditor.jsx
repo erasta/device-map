@@ -14,7 +14,7 @@ const position = [32.081128, 34.779729];
 
 let lastIndex;
 
-const DeviceEditor = ({ devices, setDevices }) => {
+export const DeviceEditor = ({ devices, setDevices }) => {
     const mapElement = useRef(null);
     const currPolyline = useRef(null);
     const auxPolyline = useRef(null);
@@ -293,4 +293,3 @@ const DeviceEditor = ({ devices, setDevices }) => {
         </div>
     )
 }
-export default React.memo(DeviceEditor, (prevState, nextState) => prevState.show === nextState.show);

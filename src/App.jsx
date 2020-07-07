@@ -1,6 +1,6 @@
 import React from 'react';
 import { deviceTypes, deviceForType } from './DataContents';
-import DeviceEditor from './DeviceEditor/DeviceEditor';
+import { DeviceEditor } from './DeviceEditor/DeviceEditor';
 import { CircularProgress } from '@material-ui/core';
 
 console.log(new Date());
