@@ -8,6 +8,7 @@ import { ShapeChooser } from './ShapeChooser';
 import { TypeChooser } from './TypeChooser';
 import { arcCurveFromPoints, lerpPoint, resamplePolyline, splineCurve, polylineDistance, distToText, rectByAngle } from './Utils';
 import { MapLayersControl } from './MapLayersControl';
+import { setDeviceLocation, getDeviceLocation } from './DeviceUtils';
 
 const position = [32.081128, 34.779729];
 
@@ -23,10 +24,11 @@ const DeviceEditor = ({ devices, setDevices }) => {
     const [showAll, setShowAll] = React.useState(false);
     const [shape, setShape] = React.useState("Point");
     const [markedPoints, setMarkedPoints] = React.useState([]);
-    const [rectAngle, setRectAngle] = React.useState(0);
+    const [rectAngle] = React.useState(0);
     const [rectRows, setRectRows] = React.useState(3);
     const [devicesShowName, setDevicesShowName] = React.useState(false);
 
+    console.log('DeviceEditor', devices)
 
     // useEffect(() => {
     //     mapElement.current.leafletElement.invalidateSize();
@@ -34,9 +36,10 @@ const DeviceEditor = ({ devices, setDevices }) => {
 
     const changeLocations = (type, indices, newLocations) => {
         let tempDevices = JSON.parse(JSON.stringify(devices));
-        let typeDevices = tempDevices.find(d => d.type === type).items;
+        let typeDevices = tempDevices.find(d => d.type === type);
         for (let i = 0; i < indices.length; ++i) {
-            typeDevices[indices[i]].position = newLocations[Math.min(i, newLocations.length - 1)];
+            const loc = newLocations[Math.min(i, newLocations.length - 1)];
+            setDeviceLocation(typeDevices.items[indices[i]], typeDevices, loc);
         }
         return tempDevices;
     };
@@ -178,15 +181,15 @@ const DeviceEditor = ({ devices, setDevices }) => {
                     devices.map(devType => {
                         if (showAll || (devType.type === selectedType)) {
                             return devType.items.map((dev, index) => {
-                                if (dev.position) {
-                                    return <DeviceMarker key={dev.name} device={dev}
-                                        isSelected={selection.includes(index)}
-                                        isTypeSelected={devType.type === selectedType}
-                                        shouldShowName={devicesShowName}
-                                    />
-                                } else {
-                                    return null;
-                                }
+                                const loc = getDeviceLocation(dev, devType);
+                                if (!loc) return null;
+                                return <DeviceMarker
+                                    key={dev.name} device={dev}
+                                    devLocation={loc}
+                                    isSelected={selection.includes(index)}
+                                    isTypeSelected={devType.type === selectedType}
+                                    shouldShowName={devicesShowName}
+                                />
                             });
                         } else {
                             return null;
@@ -271,6 +274,7 @@ const DeviceEditor = ({ devices, setDevices }) => {
                                         <DeviceRow
                                             key={dev.name}
                                             dev={dev}
+                                            devLocation={getDeviceLocation(dev, devItems)}
                                             isSelected={selection.includes(index)}
                                             onClick={e => handleSelectionClick(index, e.shiftKey)}
                                             onDisableLocation={e => changeLocations(selectedType, [index], [undefined])}
