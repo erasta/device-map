@@ -184,7 +184,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
                                 const loc = getDeviceLocation(dev, devType);
                                 if (!loc) return null;
                                 return <DeviceMarker
-                                    key={dev.name} device={dev}
+                                    key={dev.key} device={dev}
                                     devLocation={loc}
                                     isSelected={selection.includes(index)}
                                     isTypeSelected={devType.type === selectedType}
@@ -272,7 +272,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
                                 devices.filter(d => d.type === selectedType).map(devItems =>
                                     devItems.items.map((dev, index) =>
                                         <DeviceRow
-                                            key={dev.name}
+                                            key={dev.key}
                                             dev={dev}
                                             devLocation={getDeviceLocation(dev, devItems)}
                                             isSelected={selection.includes(index)}

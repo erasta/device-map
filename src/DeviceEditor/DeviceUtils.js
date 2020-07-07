@@ -23,3 +23,10 @@ export const setDeviceLocation = (device, deviceType, newLocation) => {
     });
 }
 
+export const sortDevices = (deviceTypes) => {
+    deviceTypes.sort((a, b) => (a.name + ";" + a.key).localeCompare(b.name + ";" + b.key));
+    deviceTypes.forEach(devType => {
+        devType.items.sort((a, b) => (a.name + ";" + a.key).localeCompare(b.name + ";" + b.key));
+    });
+    return deviceTypes;
+}

@@ -2,14 +2,15 @@ import React from 'react';
 import { deviceTypes, deviceForType } from './DataContents';
 import { DeviceEditor } from './DeviceEditor/DeviceEditor';
 import { CircularProgress } from '@material-ui/core';
+import { sortDevices } from './DeviceEditor/DeviceUtils';
 
 console.log(new Date());
 
-const newdev = deviceTypes.map((type, i) => {
+const newdev = sortDevices(deviceTypes.map((type, i) => {
     type.type = type.name;
     type.items = deviceForType[i];
     return type;
-});
+}));
 
 export const App = () => {
     const [devices, setDevices] = React.useState(newdev);
