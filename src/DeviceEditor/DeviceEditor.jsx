@@ -7,7 +7,7 @@ import { ShapeChooser } from './ShapeChooser';
 import { TypeChooser } from './TypeChooser';
 import { arcCurveFromPoints, lerpPoint, resamplePolyline, splineCurve, polylineDistance, distToText, rectByAngle } from './Utils';
 import { MapLayersControl } from './MapLayersControl';
-import { setDeviceLocation, getDeviceLocation } from './DeviceUtils';
+import { changeDeviceLocation, getDeviceLocation } from './DeviceUtils';
 import { InputSlider } from './InputSlider';
 import { DeviceList } from './DeviceList';
 
@@ -29,12 +29,12 @@ export const DeviceEditor = ({ devices, setDevices }) => {
 
     console.log('DeviceEditor', devices)
 
-    const changeLocations = (type, indices, newLocations) => {
+    const changeLocations = (type, indices, newLocations = [undefined]) => {
         let tempDevices = JSON.parse(JSON.stringify(devices));
         let typeDevices = tempDevices.find(d => d.name === type);
         for (let i = 0; i < indices.length; ++i) {
             const loc = newLocations[Math.min(i, newLocations.length - 1)];
-            setDeviceLocation(typeDevices.items[indices[i]], typeDevices, loc);
+            changeDeviceLocation(typeDevices.items[indices[i]], typeDevices, loc);
         }
         return tempDevices;
     };
@@ -231,6 +231,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
                         selection={selection}
                         setSelection={setSelection}
                         devices={devices.filter(d => d.name === selectedType)}
+                        removeDeviceLocation={(index) => setDevices(changeLocations(selectedType, [index]))}
                     />
 
                 </div>

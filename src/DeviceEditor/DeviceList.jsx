@@ -1,11 +1,10 @@
 import React from 'react';
 import { List } from '@material-ui/core';
 import { DeviceRow } from './DeviceRow';
-import { setDeviceLocation, getDeviceLocation } from './DeviceUtils';
+import { getDeviceLocation } from './DeviceUtils';
 
-let lastIndex;
-
-export const DeviceList = ({ devices, selection, setSelection }) => {
+export const DeviceList = ({ devices, selection, setSelection, removeDeviceLocation }) => {
+    const [lastIndex, setLastIndex] = React.useState();
 
     const handleSelectionClick = (index, doRange) => {
         let sel = [];
@@ -23,8 +22,8 @@ export const DeviceList = ({ devices, selection, setSelection }) => {
             }
             sel.concat(selection.filter(s => s > high));
         }
+        setLastIndex(index);
         setSelection(sel.sort());
-        lastIndex = index;
     }
 
     return (
@@ -40,8 +39,8 @@ export const DeviceList = ({ devices, selection, setSelection }) => {
                                 dev={dev}
                                 devLocation={getDeviceLocation(dev, devType)}
                                 isSelected={selection.includes(index)}
-                                onClick={e => handleSelectionClick(index, e.shiftKey)}
-                                onDisableLocation={e => setDeviceLocation(dev, devType, undefined)}
+                                onClick={e => { handleSelectionClick(index, e.shiftKey) }}
+                                onDisableLocation={() => { removeDeviceLocation(index); }}
                             />
                         )
                     )
