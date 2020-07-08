@@ -1,8 +1,7 @@
-import { Button, InputLabel, List, Paper, Switch } from '@material-ui/core';
+import { Button, InputLabel, Paper, Switch } from '@material-ui/core';
 import React, { useRef, useEffect } from 'react';
 import { Map as LeafletMap, Polyline } from "react-leaflet";
 import { DeviceMarker } from './DeviceMarker';
-import { DeviceRow } from './DeviceRow';
 import { JsonStreamer } from './JsonStreamer';
 import { ShapeChooser } from './ShapeChooser';
 import { TypeChooser } from './TypeChooser';
@@ -10,10 +9,9 @@ import { arcCurveFromPoints, lerpPoint, resamplePolyline, splineCurve, polylineD
 import { MapLayersControl } from './MapLayersControl';
 import { setDeviceLocation, getDeviceLocation } from './DeviceUtils';
 import { InputSlider } from './InputSlider';
+import { DeviceList } from './DeviceList';
 
 const position = [32.081128, 34.779729];
-
-let lastIndex;
 
 export const DeviceEditor = ({ devices, setDevices }) => {
     const mapElement = useRef(null);
@@ -40,26 +38,6 @@ export const DeviceEditor = ({ devices, setDevices }) => {
         }
         return tempDevices;
     };
-
-    const handleSelectionClick = (index, doRange) => {
-        let sel = [];
-        if (!doRange) {
-            if (selection.includes(index)) {
-                sel = selection.filter(s => s !== index);
-            } else {
-                sel = selection.concat([index]);
-            }
-        } else if (lastIndex !== undefined) {
-            const low = Math.min(index, lastIndex), high = Math.max(index, lastIndex);
-            sel = selection.filter(s => s < low);
-            for (let i = low; i <= high; ++i) {
-                sel.push(i);
-            }
-            sel.concat(selection.filter(s => s > high));
-        }
-        setSelection(sel.sort());
-        lastIndex = index;
-    }
 
     const handleMapClick = e => {
         // if (selection.length < 1) return;
@@ -249,26 +227,12 @@ export const DeviceEditor = ({ devices, setDevices }) => {
                         />
                     </div>
 
-                    <div style={{ overflow: 'scroll', height: 'inherit', display: 'block' }}
-                    // inputProps={{ style: { overflow: 'scroll' } }}
-                    >
-                        <List>
-                            {
-                                devices.filter(d => d.name === selectedType).map(devItems =>
-                                    devItems.items.map((dev, index) =>
-                                        <DeviceRow
-                                            key={dev.key}
-                                            dev={dev}
-                                            devLocation={getDeviceLocation(dev, devItems)}
-                                            isSelected={selection.includes(index)}
-                                            onClick={e => handleSelectionClick(index, e.shiftKey)}
-                                            onDisableLocation={e => changeLocations(selectedType, [index], [undefined])}
-                                        />
-                                    )
-                                )
-                            }
-                        </List >
-                    </div >
+                    <DeviceList
+                        selection={selection}
+                        setSelection={setSelection}
+                        devices={devices.filter(d => d.name === selectedType)}
+                    />
+
                 </div>
             </Paper>
             <JsonStreamer
