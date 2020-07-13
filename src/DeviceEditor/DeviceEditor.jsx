@@ -1,20 +1,17 @@
 import { Button, InputLabel, Paper, Switch } from '@material-ui/core';
 import React, { useRef, useEffect } from 'react';
-import { Map as LeafletMap, Polyline } from "react-leaflet";
+import { Polyline } from "react-leaflet";
 import { DeviceMarker } from './DeviceMarker';
 import { JsonStreamer } from './JsonStreamer';
 import { ShapeChooser } from './ShapeChooser';
 import { TypeChooser } from './TypeChooser';
 import { arcCurveFromPoints, lerpPoint, resamplePolyline, splineCurve, polylineDistance, distToText, rectByAngle } from './Utils';
-import { MapLayersControl } from './MapLayersControl';
 import { changeDeviceLocation, getDeviceLocation } from './DeviceUtils';
 import { InputSlider } from './InputSlider';
 import { DeviceList } from './DeviceList';
-
-const position = [32.081128, 34.779729];
+import { DeviceMap } from './DeviceMap';
 
 export const DeviceEditor = ({ devices, setDevices }) => {
-    const mapElement = useRef(null);
     const currPolyline = useRef(null);
     const auxPolyline = useRef(null);
 
@@ -134,25 +131,16 @@ export const DeviceEditor = ({ devices, setDevices }) => {
     };
 
     useEffect(() => {
-        mapElement.current.leafletElement.invalidateSize();
         renderShape();
     });
 
     return (
         <div className="App" style={{ position: 'relative', height: "100vh" }}>
-            <LeafletMap
-                center={position}
-                zoom={15}
-                ref={mapElement}
-                style={{ height: "100%", width: '70%', position: 'absolute', top: 0, bottom: 0, right: 0 }}
+            <DeviceMap
                 onClick={handleMapClick}
                 onMouseMove={handleMouseMove}
                 onMouseOut={handleMouseOut}
-                preferCanvas={true}
             >
-
-                <MapLayersControl />
-
                 {
                     devices.map(devType => {
                         if (showAll || (devType.name === selectedType)) {
@@ -184,7 +172,7 @@ export const DeviceEditor = ({ devices, setDevices }) => {
                         </>
                 }
 
-            </LeafletMap>
+            </DeviceMap>
             <Paper
                 style={{
                     position: 'absolute', height: '88%', overflow: 'auto', top: 0, width: '28%',
@@ -236,10 +224,17 @@ export const DeviceEditor = ({ devices, setDevices }) => {
 
                 </div>
             </Paper>
-            <JsonStreamer
-                json={devices}
-                onChange={(val) => setDevices(val)}
-            />
+            <Paper
+                style={{
+                    position: 'absolute', maxHeight: '10%', overflow: 'auto', height: '10%', width: '28%',
+                    left: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', zIndex: 1000
+                }}
+            >
+                <JsonStreamer
+                    json={devices}
+                    onChange={(val) => setDevices(val)}
+                />
+            </Paper>
         </div>
     )
 }
